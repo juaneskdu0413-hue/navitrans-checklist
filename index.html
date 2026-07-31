@@ -171,6 +171,39 @@
   .sync-ok{background:var(--ok-bg);color:var(--ok);}
   .sync-no{background:var(--warn-bg);color:var(--warn);}
 
+  /* ── LOGIN ── */
+  #sl{display:none;min-height:100vh;align-items:center;justify-content:center;padding:2rem;background:var(--bg);}
+  .login-card{background:var(--s0);border-radius:16px;border:1px solid var(--border);padding:2rem;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08);}
+  .login-icon{width:60px;height:60px;background:var(--red);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:26px;color:#fff;}
+  .login-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--muted);margin-bottom:1.5rem;}
+  .login-f{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;text-align:left;}
+  .login-f label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;}
+  .login-f input{border:1px solid var(--border);border-radius:8px;padding:11px 12px;font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s;width:100%;background:var(--s1);}
+  .login-f input:focus{border-color:var(--red);background:#fff;}
+  .login-err{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none;}
+  .btn-login{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;}
+  .btn-login:hover{opacity:.9;}
+
+  /* ── ADMIN PANEL ── */
+  #sr{display:none;max-width:960px;margin:0 auto;}
+  .rhdr{background:var(--red);color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+  .rbody{padding:1rem;display:flex;flex-direction:column;gap:1rem;}
+  .admin-badge{background:rgba(255,255,255,.25);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;}
+  .btn-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+  .stat-card{background:var(--s0);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center;}
+  .stat-val{font-size:28px;font-weight:800;color:var(--red);line-height:1;}
+  .stat-val.grn{color:var(--grn);}
+  .stat-val.warn{color:var(--warn);}
+  .stat-lbl{font-size:11px;color:var(--muted);margin-top:5px;font-weight:500;}
+  .admin-toolbar{background:var(--s0);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .filter-sel{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);outline:none;background:var(--s1);color:var(--txt);}
+  .filter-inp{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--font);outline:none;background:var(--s1);color:var(--txt);flex:1;min-width:150px;}
+  .btn-export{background:var(--grn);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .btn-export:hover{opacity:.9;}
+  .records-count{font-size:12px;color:var(--muted);padding:4px 0;}
+
   @media(max-width:480px){
     .fg{grid-template-columns:1fr;}
     .acc-grid{grid-template-columns:repeat(2,1fr);}
@@ -199,7 +232,7 @@
   <div class="h-btns">
     <button class="btn-p" onclick="startForm('recepcion')"><i class="ti ti-truck-loading"></i>Registrar Recepción (Puerto)</button>
     <button class="btn-p grn" onclick="startForm('entrega')"><i class="ti ti-check-circle"></i>Registrar Entrega (Destino)</button>
-    <button class="btn-s" onclick="showRecords()"><i class="ti ti-clipboard-list" style="color:var(--red)"></i>Ver registros</button>
+    <button class="btn-s" onclick="showLogin()"><i class="ti ti-lock" style="color:var(--red)"></i>Panel de Administrador</button>
   </div>
   <div style="margin-top:1.5rem;font-size:12px;color:var(--muted);cursor:pointer;" onclick="clearAll()">⚙ Limpiar datos locales</div>
 </div>
@@ -381,13 +414,57 @@
   </div>
 </div>
 
+
+<!-- ══ LOGIN ADMIN ══ -->
+<div id="sl" style="display:none">
+  <div class="login-card">
+    <div class="login-icon"><i class="ti ti-shield-lock"></i></div>
+    <div class="login-title">Panel de Administrador</div>
+    <div class="login-sub">Acceso restringido · Solo coordinadores</div>
+    <div class="login-err" id="login-err">Usuario o contraseña incorrectos</div>
+    <div class="login-f">
+      <label>Usuario</label>
+      <input type="text" id="l-user" placeholder="Tu usuario" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-f">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" placeholder="Tu contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Ingresar</button>
+    <div style="margin-top:1rem;font-size:12px;color:var(--muted);cursor:pointer;" onclick="goHome()">← Volver</div>
+  </div>
+</div>
+
 <!-- ══ RECORDS ══ -->
 <div id="sr">
   <div class="rhdr">
     <button class="back-btn" onclick="goHome()"><i class="ti ti-arrow-left"></i></button>
-    <div class="fhdr-info"><div class="fhdr-title">Registros Guardados</div><div class="fhdr-sub">Vehículos nuevos · NAVITRANS</div></div>
+    <div class="fhdr-info"><div class="fhdr-title">Panel de Administrador</div><div class="fhdr-sub">NAVITRANS · Coordinador de Operaciones</div></div>
+    <span class="admin-badge">🛡 Admin</span>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
   </div>
-  <div class="rbody" id="rbody"></div>
+  <div class="rbody" id="rbody">
+    <!-- Stats -->
+    <div class="stats-grid" id="admin-stats"></div>
+    <!-- Toolbar -->
+    <div class="admin-toolbar">
+      <select class="filter-sel" id="f-mode" onchange="renderRecords()">
+        <option value="">Todos los tipos</option>
+        <option value="recepcion">Recepciones</option>
+        <option value="entrega">Entregas</option>
+      </select>
+      <select class="filter-sel" id="f-concepto" onchange="renderRecords()">
+        <option value="">Todos los conceptos</option>
+        <option value="ok">Sin novedades</option>
+        <option value="nov">Con novedades</option>
+      </select>
+      <input class="filter-inp" type="text" id="f-search" placeholder="Buscar por VIN o conductor..." oninput="renderRecords()">
+      <button class="btn-export" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i> Exportar CSV</button>
+    </div>
+    <div class="records-count" id="records-count"></div>
+    <!-- Lista -->
+    <div id="records-list"></div>
+  </div>
 </div>
 
 <script>
@@ -470,9 +547,9 @@ function togAcc(i) {
 
 // ── NAVEGACIÓN ────────────────────────────────────────────────────
 function showScreen(id) {
-  ['sh','sf','sr'].forEach(s=>{ const el=document.getElementById(s); el.style.display='none'; });
+  ['sh','sf','sl','sr'].forEach(s=>{ const el=document.getElementById(s); el.style.display='none'; });
   const el=document.getElementById(id);
-  el.style.display=id==='sh'?'flex':'block';
+  el.style.display=id==='sh'?'flex':id==='sl'?'flex':'block';
 }
 function goHome(){showScreen('sh');}
 function showRecords(){renderRecords();showScreen('sr');}
@@ -751,12 +828,81 @@ function mostrarSello(vin,conductor,hash,ts,sync){
   document.body.appendChild(ov);
 }
 
+// ── AUTH ──────────────────────────────────────────────────────────
+const ADMINS = [
+  {user:'juaneskdu', pass:'Juancho043'},
+  {user:'NelsonC',   pass:'Nelson043'},
+];
+
+function showLogin(){showScreen('sl');}
+
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  const err=document.getElementById('login-err');
+  if(ADMINS.some(a=>a.user===u && a.pass===p)){
+    sessionStorage.setItem('nvt_admin','1');
+    err.style.display='none';
+    showRecords();
+  } else {
+    err.style.display='block';
+    document.getElementById('l-pass').value='';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('nvt_admin');
+  goHome();
+}
+
+function checkAuth(){
+  return sessionStorage.getItem('nvt_admin')==='1';
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function renderStats(recs){
+  const total=recs.length;
+  const recepciones=recs.filter(r=>r.mode==='recepcion').length;
+  const entregas=recs.filter(r=>r.mode==='entrega').length;
+  const sinNov=recs.filter(r=>r.concepto==='ok').length;
+  const conNov=recs.filter(r=>r.concepto==='nov').length;
+  const conductores=[...new Set(recs.map(r=>r.conductor).filter(Boolean))].length;
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Total registros</div></div>
+    <div class="stat-card"><div class="stat-val">${recepciones}</div><div class="stat-lbl">Recepciones</div></div>
+    <div class="stat-card"><div class="stat-val grn">${entregas}</div><div class="stat-lbl">Entregas</div></div>
+    <div class="stat-card"><div class="stat-val grn">${sinNov}</div><div class="stat-lbl">Sin novedades</div></div>
+    <div class="stat-card"><div class="stat-val warn">${conNov}</div><div class="stat-lbl">Con novedades</div></div>
+    <div class="stat-card"><div class="stat-val">${conductores}</div><div class="stat-lbl">Conductores</div></div>
+  `;
+}
+
 // ── RECORDS ───────────────────────────────────────────────────────
+function showRecords(){
+  if(!checkAuth()){showLogin();return;}
+  renderRecords();
+  showScreen('sr');
+}
+
 function renderRecords(){
-  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
-  const body=document.getElementById('rbody');
-  if(!recs.length){body.innerHTML=`<div class="empty-st"><div style="font-size:36px;margin-bottom:12px;opacity:.4"><i class="ti ti-clipboard-x"></i></div>No hay registros aún.</div>`;return;}
-  body.innerHTML=recs.map(r=>{
+  let recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  renderStats(recs);
+
+  // Filtros
+  const modeF=document.getElementById('f-mode')?.value||'';
+  const concF=document.getElementById('f-concepto')?.value||'';
+  const searchF=(document.getElementById('f-search')?.value||'').toLowerCase();
+
+  if(modeF) recs=recs.filter(r=>r.mode===modeF);
+  if(concF) recs=recs.filter(r=>r.concepto===concF);
+  if(searchF) recs=recs.filter(r=>(r.vin||'').toLowerCase().includes(searchF)||(r.conductor||'').toLowerCase().includes(searchF));
+
+  const list=document.getElementById('records-list');
+  const count=document.getElementById('records-count');
+  if(count) count.textContent=`${recs.length} registro(s) encontrado(s)`;
+
+  if(!recs.length){list.innerHTML=`<div class="empty-st"><div style="font-size:36px;margin-bottom:12px;opacity:.4"><i class="ti ti-clipboard-x"></i></div>No hay registros con esos filtros.</div>`;return;}
+  list.innerHTML=recs.map(r=>{
     const fecha=new Date(r.timestamp);
     const fs=fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
     const hs=fecha.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
@@ -765,25 +911,48 @@ function renderRecords(){
     const hc=r.hash?r.hash.substring(0,12).toUpperCase():null;
     const ht=hc?`<span class="hash-tag">🔐 ${hc}...</span>`:'';
     const st=r.sellado?`<span class="sync-tag sync-ok">☁️ enviado</span>`:'';
+    const novBadge=r.novedad?`<div style="margin-top:6px;background:var(--warn-bg);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--warn);">⚠️ ${r.novedad_zona||'Novedad'}: ${r.novedad.substring(0,60)}${r.novedad.length>60?'...':''}</div>`:'';
     return `<div class="rc">
       <div class="rc-top">
         <div style="flex:1">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">${tag}<span class="rc-vin">${r.vin}</span></div>
           <div class="rc-conductor"><i class="ti ti-user" style="font-size:12px"></i> ${r.conductor||'—'}</div>
-          <div class="rc-meta"><i class="ti ti-map-pin" style="font-size:11px"></i> ${r.ciudad||'—'} · <i class="ti ti-calendar" style="font-size:11px"></i> ${fs} ${hs}</div>
+          <div class="rc-meta"><i class="ti ti-map-pin" style="font-size:11px"></i> ${r.ciudad||'—'} · <i class="ti ti-truck" style="font-size:11px"></i> ${r.marca||''} ${r.modelo||''}</div>
+          <div class="rc-meta"><i class="ti ti-calendar" style="font-size:11px"></i> ${fs} ${hs} ${r.lat?`· 📍 ${r.lat},${r.lng}`:''}</div>
           <div style="margin-top:4px">${ht}${st}</div>
+          ${novBadge}
         </div>
         <div style="text-align:right">
           <div style="font-size:22px">${ci}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">${r.fotos} foto(s)</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${r.accesorios?.length||0} accesorios</div>
         </div>
       </div>
       <div class="rc-phases">
         <div class="rc-ph"><div class="dot dot-ok"></div>${r.mode==='recepcion'?'Recepción registrada':'Entrega registrada'}</div>
-        <div class="rc-ph"><div class="dot ${r.concepto?'dot-ok':'dot-pend'}"></div>Concepto: ${r.concepto==='ok'?'Sin novedades':r.concepto==='nov'?'Con novedades':'Pendiente'}</div>
+        <div class="rc-ph"><div class="dot ${r.concepto?'dot-ok':'dot-pend'}"></div>${r.concepto==='ok'?'Sin novedades':r.concepto==='nov'?'Con novedades ⚠️':'Concepto pendiente'}</div>
       </div>
     </div>`;
   }).join('');
+}
+
+// ── EXPORTAR CSV ──────────────────────────────────────────────────
+function exportCSV(){
+  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  if(!recs.length){alert('No hay registros para exportar.');return;}
+  const cols=['ID','Timestamp','Modo','Conductor','VIN','Orden','Ciudad','Tipo','Marca','Modelo','Motor','Chasis','KM','Latitud','Longitud','Concepto','Novedad','Zona Novedad','Lavado','Fotos','Accesorios','Hash SHA-256','Sellado'];
+  const rows=recs.map(r=>[
+    r.id, r.timestamp, r.mode, r.conductor, r.vin, r.orden, r.ciudad,
+    r.tipo, r.marca, r.modelo, r.motor, r.chasis, r.km, r.lat, r.lng,
+    r.concepto, r.novedad, r.novedad_zona, r.lavado, r.fotos,
+    (r.accesorios||[]).join(' | '), r.hash, r.sellado?'SI':'NO'
+  ].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`navitrans_registros_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
 
 function clearAll(){if(confirm('¿Eliminar todos los registros locales?')){localStorage.removeItem('nvt_recs');alert('Datos eliminados.');}}
