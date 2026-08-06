@@ -347,6 +347,35 @@
 
   .btn-drive{display:inline-flex;align-items:center;gap:5px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;text-decoration:none;transition:background .15s;}
   .btn-drive:hover{background:#d0ead0;}
+
+  /* ── ESCÁNER DE DOCUMENTOS ────────────────────────────── */
+  .doc-scanner{display:flex;flex-direction:column;gap:10px;}
+  .doc-scan-item{background:var(--surface-1);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:all .2s;}
+  .doc-scan-item.captured{border-color:var(--ua-grn);background:var(--ua-grn-l);}
+  .doc-scan-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;}
+  .doc-scan-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .doc-scan-icon.pend{background:var(--surface-0);border:1.5px dashed var(--border);color:var(--text-muted);}
+  .doc-scan-icon.done{background:var(--ua-grn);color:#fff;}
+  .doc-scan-label{flex:1;}
+  .doc-scan-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+  .doc-scan-status{font-size:11px;color:var(--text-muted);margin-top:1px;}
+  .doc-scan-status.ok{color:var(--ua-grn-d);}
+  .doc-scan-btn{border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+  .doc-scan-btn.scan{background:var(--ua-grn);color:#fff;}
+  .doc-scan-btn.rescan{background:var(--surface-0);border:1.5px solid var(--border);color:var(--text-secondary);}
+  .doc-preview-wrap{padding:0 12px 10px;display:none;}
+  .doc-preview-wrap.vis{display:block;}
+  .doc-preview-img{width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);max-height:200px;object-fit:cover;filter:contrast(1.15) brightness(1.05);}
+  .doc-preview-enhanced{font-size:10px;color:var(--ua-grn-d);margin-top:4px;display:flex;align-items:center;gap:4px;font-weight:500;}
+  .scan-video-wrap{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;}
+  .scan-video{flex:1;object-fit:cover;width:100%;}
+  .scan-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+  .scan-frame{width:80%;max-width:320px;aspect-ratio:1.414;border:2px solid var(--ua-yel);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);}
+  .scan-controls{position:absolute;bottom:0;left:0;right:0;padding:1.2rem;display:flex;gap:12px;justify-content:center;background:linear-gradient(transparent,rgba(0,0,0,.7));}
+  .scan-capture-btn{width:70px;height:70px;border-radius:50%;background:var(--ua-grn);border:4px solid #fff;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  .scan-cancel-btn{position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.5);border:none;color:#fff;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;}
+  .scan-hint{position:absolute;top:1rem;left:0;right:0;text-align:center;color:#fff;font-size:12px;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+
   @media(max-width:480px){
     .fg{grid-template-columns:1fr;}
     .acc-grid{grid-template-columns:repeat(2,1fr);}
@@ -462,10 +491,39 @@
       </div>
     </div>
 
-    <!-- S2 Documentación -->
+    <!-- S2 Documentación + Escáner -->
     <div class="sc">
       <div class="sh2"><div class="sn r" id="sn2">2</div><div class="st">Documentación</div></div>
-      <div class="sb"><table class="cht"><thead><tr><th>Documento</th><th>Sí</th><th>No</th></tr></thead><tbody id="t-docs"></tbody></table></div>
+      <div class="sb">
+        <table class="cht"><thead><tr><th>Documento</th><th>Sí</th><th>No</th></tr></thead><tbody id="t-docs"></tbody></table>
+        <div class="info-box red" style="margin-top:4px"><i class="ti ti-scan" style="font-size:15px;margin-top:1px"></i>Escanea los documentos físicos directamente desde el celular.</div>
+        <div class="doc-scanner" id="doc-scanner"></div>
+
+        <!-- Documentos del Puerto -->
+        <div style="margin-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-building-warehouse" style="font-size:14px;color:var(--ua-grn)"></i>
+            Documentos del Puerto
+          </div>
+          <div class="doc-scanner" id="doc-scanner-puerto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Escáner modal (cámara) -->
+    <div id="scan-modal" style="display:none">
+      <div class="scan-video-wrap" id="scan-video-wrap">
+        <video id="scan-video" class="scan-video" autoplay playsinline muted></video>
+        <canvas id="scan-canvas" style="display:none"></canvas>
+        <div class="scan-overlay">
+          <div class="scan-frame"></div>
+        </div>
+        <div class="scan-hint">Centra el documento dentro del marco</div>
+        <button class="scan-cancel-btn" onclick="closeScan()"><i class="ti ti-x"></i></button>
+        <div class="scan-controls">
+          <button class="scan-capture-btn" onclick="captureDoc()"><i class="ti ti-camera"></i></button>
+        </div>
+      </div>
     </div>
 
     <!-- S3 Exterior -->
@@ -679,7 +737,7 @@
 </div>
 
 <script>
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyMk8xirnAcdbaQ_TsERENkX8qfzJreTs6n2joFGwbeJQ3eXjXpMQlg88EB8-tUbQUP_Q/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwCznbCTrtQwPH4cGXEFfE_6i9F0IEad4jQ0cMgTGOuJKxU6nwii_6-oVowDdmqzmsafQ/exec';
 const ADMINS = [{user:'juaneskdu',pass:'Juancho043'},{user:'NelsonC',pass:'Nelson043'}];
 
 const DOCS = ['Permiso del Min Transp','SOAT','Manual del Vehículo','Llaves','Carpeta Documental'];
@@ -691,7 +749,208 @@ const ACC  = ['Extintor','Botiquín','Triángulos','Chaleco','Gato','Cruceta','L
 
 let mode='recepcion', files=[], lavVal=null, concVal=null, novOpen=false;
 
+
+// ── ESCÁNER DE DOCUMENTOS ─────────────────────────────────────────
+const DOCS_SCAN = ['Permiso del Min Transp','SOAT','Manual del Vehículo','Llaves / Entrega de llaves','Carpeta Documental'];
+const DOCS_PUERTO = ['Checklist de Puerto','Tirilla del Puerto','Otro documento'];
+let scanDocs = {}; // { index: { dataUrl, blob, name } }
+let scanTarget = null;
+let scanStream = null;
+
+function buildScannerHTML(docs, prefix, allowNote=false){
+  return docs.map((name, i) => `
+    <div class="doc-scan-item" id="${prefix}_${i}">
+      <div class="doc-scan-header">
+        <div class="doc-scan-icon pend" id="${prefix}_icon_${i}"><i class="ti ti-file-unknown"></i></div>
+        <div class="doc-scan-label">
+          <div class="doc-scan-name">${name}${name==='Otro documento'?' <span style="color:var(--muted);font-weight:400;font-size:11px">(especifica abajo)</span>':''}</div>
+          <div class="doc-scan-status" id="${prefix}_status_${i}">Sin escanear</div>
+        </div>
+        <button class="doc-scan-btn scan" id="${prefix}_btn_${i}" onclick="openScanPfx('${prefix}',${i},'${name}')">
+          <i class="ti ti-scan"></i> Escanear
+        </button>
+      </div>
+      ${allowNote && name==='Otro documento' ? `
+      <div style="padding:0 12px 10px;">
+        <input type="text" id="${prefix}_nota_${i}" placeholder="¿Qué documento es? Escríbelo aquí..." style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;width:100%;font-family:var(--font);outline:none;background:var(--surface-1);" onfocus="this.style.borderColor='var(--ua-grn)'" onblur="this.style.borderColor='var(--border)'">
+      </div>` : ''}
+      <div class="doc-preview-wrap" id="${prefix}_prev_${i}">
+        <img class="doc-preview-img" id="${prefix}_img_${i}" src="">
+        <div class="doc-preview-enhanced"><i class="ti ti-wand" style="font-size:12px"></i> Imagen procesada y guardada</div>
+      </div>
+    </div>`).join('');
+}
+
+function initDocScanner(){
+  const container = document.getElementById('doc-scanner');
+  if(container) container.innerHTML = buildScannerHTML(DOCS_SCAN, 'ds', false);
+  const containerP = document.getElementById('doc-scanner-puerto');
+  if(containerP) containerP.innerHTML = buildScannerHTML(DOCS_PUERTO, 'dp', true);
+}
+
+function initDocScannerOLD(){
+  const container = document.getElementById('doc-scanner');
+  if(!container) return;
+  container.innerHTML = DOCS_SCAN.map((name, i) => `
+    <div class="doc-scan-item" id="dsi_${i}">
+      <div class="doc-scan-header">
+        <div class="doc-scan-icon pend" id="dsi_icon_${i}"><i class="ti ti-file-unknown"></i></div>
+        <div class="doc-scan-label">
+          <div class="doc-scan-name">${name}</div>
+          <div class="doc-scan-status" id="dsi_status_${i}">Sin escanear</div>
+        </div>
+        <button class="doc-scan-btn scan" id="dsi_btn_${i}" onclick="openScan(${i})">
+          <i class="ti ti-scan"></i> Escanear
+        </button>
+      </div>
+      <div class="doc-preview-wrap" id="dsi_prev_${i}">
+        <img class="doc-preview-img" id="dsi_img_${i}" src="">
+        <div class="doc-preview-enhanced"><i class="ti ti-wand" style="font-size:12px"></i> Imagen procesada y guardada</div>
+      </div>
+    </div>`).join('');
+}
+
+let scanPrefix = 'ds';
+let scanDocName = '';
+
+async function openScanPfx(prefix, idx, docName){
+  scanPrefix = prefix;
+  scanTarget = idx;
+  scanDocName = docName;
+  const modal = document.getElementById('scan-modal');
+  modal.style.display = 'block';
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+    });
+    document.getElementById('scan-video').srcObject = scanStream;
+  } catch(e) {
+    closeScan();
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+    inp.onchange = ev => processDocFilePfx(ev.target.files[0], prefix, idx, docName);
+    inp.click();
+  }
+}
+
+async function openScan(idx){ openScanPfx('ds', idx, DOCS_SCAN[idx]); }
+
+function closeScan(){
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  document.getElementById('scan-modal').style.display='none';
+}
+
+function captureDoc(){
+  const video = document.getElementById('scan-video');
+  const canvas = document.getElementById('scan-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  enhanceDocImage(ctx, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  // Obtener nota si es "Otro documento"
+  let nombre = scanDocName;
+  if(nombre === 'Otro documento'){
+    const notaEl = document.getElementById(`${scanPrefix}_nota_${scanTarget}`);
+    const nota = notaEl?.value?.trim();
+    if(nota) nombre = nota;
+  }
+  saveDocScanPfx(scanPrefix, scanTarget, dataUrl, nombre);
+  closeScan();
+}
+
+function enhanceDocImage(ctx, w, h){
+  // Aumentar contraste y reducir saturación (efecto escáner)
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const contrast = 1.3;
+  const brightness = 15;
+  for(let i=0; i<data.length; i+=4){
+    // Convertir a escala de grises ponderada
+    const gray = data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+    // Mezclar con original (70% original, 30% gris) para mantener algo de color
+    const r = data[i]*0.7 + gray*0.3;
+    const g = data[i+1]*0.7 + gray*0.3;
+    const b = data[i+2]*0.7 + gray*0.3;
+    // Aplicar contraste y brillo
+    data[i]   = Math.min(255, Math.max(0, (r - 128) * contrast + 128 + brightness));
+    data[i+1] = Math.min(255, Math.max(0, (g - 128) * contrast + 128 + brightness));
+    data[i+2] = Math.min(255, Math.max(0, (b - 128) * contrast + 128 + brightness));
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function processDocFilePfx(file, prefix, idx, docName){
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      enhanceDocImage(ctx, img.width, img.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      let nombre = docName;
+      if(nombre === 'Otro documento'){
+        const nota = document.getElementById(`${prefix}_nota_${idx}`)?.value?.trim();
+        if(nota) nombre = nota;
+      }
+      saveDocScanPfx(prefix, idx, dataUrl, nombre);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function processDocFile(file, idx){ processDocFilePfx(file, 'ds', idx, DOCS_SCAN[idx]); }
+
+function saveDocScanPfx(prefix, idx, dataUrl, name){
+  const key = `${prefix}_${idx}`;
+  scanDocs[key] = { dataUrl, name, prefix };
+  document.getElementById(`${prefix}_${idx}`).className = 'doc-scan-item captured';
+  document.getElementById(`${prefix}_icon_${idx}`).className = 'doc-scan-icon done';
+  document.getElementById(`${prefix}_icon_${idx}`).innerHTML = '<i class="ti ti-check"></i>';
+  document.getElementById(`${prefix}_status_${idx}`).textContent = 'Escaneado ✓ — ' + name;
+  document.getElementById(`${prefix}_status_${idx}`).className = 'doc-scan-status ok';
+  document.getElementById(`${prefix}_btn_${idx}`).className = 'doc-scan-btn rescan';
+  document.getElementById(`${prefix}_btn_${idx}`).innerHTML = '<i class="ti ti-refresh"></i> Repetir';
+  document.getElementById(`${prefix}_btn_${idx}`).onclick = ()=>openScanPfx(prefix, idx, name);
+  document.getElementById(`${prefix}_img_${idx}`).src = dataUrl;
+  document.getElementById(`${prefix}_prev_${idx}`).className = 'doc-preview-wrap vis';
+}
+
+function saveDocScan(idx, dataUrl, name){ saveDocScanPfx('ds', idx, dataUrl, name); }
+
+// Subir docs escaneados a Drive junto con el registro
+async function subirDocsEscaneados(vin, conductor, timestamp){
+  const keys = Object.keys(scanDocs);
+  if(!keys.length || !SHEETS_URL) return;
+  for(const key of keys){
+    const doc = scanDocs[key];
+    // Documentos de puerto van a subcarpeta "Documentos Puerto"
+    const subcarpeta = doc.prefix === 'dp' ? 'Documentos Puerto' : 'Documentos Vehiculo';
+    const nombre = `${doc.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]/g,'_')}.jpg`;
+    const b64 = doc.dataUrl.split(',')[1];
+    try {
+      await fetch(SHEETS_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          accion: 'archivo',
+          vin, conductor, timestamp,
+          nombre, tipo: 'image/jpeg',
+          datos: b64,
+          subcarpeta
+        })
+      });
+    } catch(e){}
+  }
+}
+
 function initTables(){
+  initDocScanner();
   document.getElementById('t-docs').innerHTML=DOCS.map((d,i)=>`<tr>
     <td>${d}</td>
     <td><input type="radio" name="doc_${i}" id="doc_${i}_s" class="r-si" value="si"><label for="doc_${i}_s" class="rb r-si">✓</label></td>
@@ -769,6 +1028,8 @@ function startForm(m){
   document.getElementById('ph-badge').style.display='none';
   document.getElementById('f-conductor').value='';
   document.getElementById('f-vin').value='';
+  scanDocs={};
+  initDocScanner();
 
   const isRec=m==='recepcion';
   const hdr=document.getElementById('fhdr');
@@ -994,6 +1255,7 @@ async function submitForm(){
   const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
   recs.unshift(reg); localStorage.setItem('nvt_recs',JSON.stringify(recs));
   const res=await enviarSheets(reg,files);
+  await subirDocsEscaneados(vin,conductor,ts);
 
   btn.disabled=false;
   btn.innerHTML='<i class="ti ti-cloud-upload"></i> Guardar y Enviar Registro';
