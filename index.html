@@ -347,12 +347,12 @@
   .stat-card-icon{position:absolute;top:12px;right:12px;font-size:18px;opacity:.25;}
 
   /* Conductores únicos */
-  .conductores-section{background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
-  .conductores-header{padding:14px 16px;background:linear-gradient(135deg,#1a1a1a 0%,#2a6b27 100%);color:#fff;display:flex;align-items:center;gap:10px;}
+  .conductores-section{background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);overflow:visible;box-shadow:var(--shadow-sm);}
+  .conductores-header{padding:14px 16px;background:linear-gradient(135deg,#1a1a1a 0%,#2a6b27 100%);color:#fff;display:flex;align-items:center;gap:10px;border-radius:var(--radius) var(--radius) 0 0;}
   .conductores-header-icon{width:32px;height:32px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
   .conductores-title{font-size:14px;font-weight:700;}
   .conductores-sub{font-size:11px;opacity:.6;margin-top:1px;}
-  .conductores-list{display:flex;flex-direction:column;gap:0;max-height:340px;overflow-y:auto;}
+  .conductores-list{display:flex;flex-direction:column;gap:0;}
   .conductor-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
   .conductor-item:last-child{border-bottom:none;}
   .conductor-avatar{width:36px;height:36px;border-radius:50%;background:var(--ua-grn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
@@ -362,57 +362,57 @@
   .conductor-badge{background:var(--surface-1);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ua-grn);white-space:nowrap;flex-shrink:0;}
 
   /* Tarjetas de conductor en el listado de registros (agrupadas) */
-  /* ═══ Tarjeta de conductor (colapsada) ═══ */
-  .cond-card{background:#fff;border-left:4px solid var(--ua-grn);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px;transition:box-shadow .2s ease;}
-  .cond-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.14);}
-  .cond-card-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
-  .cond-avatar{width:40px;height:40px;border-radius:50%;background:var(--ua-grn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+  /* ═══ Tarjeta de conductor (colapsada) — v2 ═══ */
+  .cond-card{background:#fff;border-left:4px solid #3aaa35;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px;transition:box-shadow .2s ease,transform .2s ease;}
+  .cond-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.14);transform:translateY(-1px);}
+  .cond-card-hd{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;}
+  .cond-avatar{width:44px;height:44px;border-radius:50%;background:#3aaa35;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;}
   .cond-info{flex:1;min-width:0;}
-  .cond-name{font-size:15px;font-weight:700;color:var(--text-primary);}
+  .cond-name{font-size:15px;font-weight:700;color:#111;}
   .cond-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
-  .cond-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
-  .cond-badge.rec{background:var(--ua-grn-l);color:var(--ua-grn-d);}
-  .cond-badge.ent{background:#eef1f4;color:#4b5563;}
-  .cond-fecha{font-size:11px;color:var(--text-muted);font-weight:500;}
+  .cond-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+  .cond-badge.rec{background:#e8f5e9;color:#2e7d32;}
+  .cond-badge.ent{background:#f1f3f4;color:#555;}
+  .cond-fecha{font-size:11px;color:#999;font-weight:500;}
   .cond-side{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  .cond-total-badge{background:var(--ua-grn);color:#fff;font-size:13px;font-weight:800;border-radius:20px;padding:5px 13px;min-width:20px;text-align:center;line-height:1;}
+  .cond-total-badge{background:#3aaa35;color:#fff;font-size:13px;font-weight:800;border-radius:20px;padding:5px 14px;min-width:20px;text-align:center;line-height:1;}
   .cond-chev{font-size:18px;color:var(--text-muted);transition:transform .25s ease;flex-shrink:0;}
-  .cond-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:#f8f9fb;}
+  .cond-card-body{max-height:0;overflow:hidden;padding:0;transition:max-height .35s ease;background:#f8f9fb;}
   .cond-card-body.open{max-height:6000px;}
 
-  /* ═══ Registros expandidos ═══ */
-  .cond-rec-row{display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;border-bottom:1px solid var(--border);}
+  /* ═══ Registros expandidos — v2 ═══ */
+  .cond-rec-row{display:flex;align-items:center;gap:12px;height:52px;padding:0 18px;border-bottom:1px solid #eee;}
   .cond-rec-row:last-child{border-bottom:none;}
-  .cond-rec-tipo{flex:0 0 66px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:4px 6px;border-radius:5px;text-align:center;}
-  .cond-rec-tipo.origen{background:var(--ua-grn-l);color:var(--ua-grn-d);}
-  .cond-rec-tipo.destino{background:#4b5563;color:#fff;}
-  .cond-rec-vin{flex:0 0 122px;font-family:monospace;font-weight:700;color:var(--ua-grn-d);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .cond-rec-info{flex:1 1 auto;min-width:0;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cond-rec-tipo{flex:0 0 62px;width:62px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;border-radius:5px;text-align:center;}
+  .cond-rec-tipo.origen{background:#e8f5e9;color:#1b5e20;}
+  .cond-rec-tipo.destino{background:#263238;color:#fff;}
+  .cond-rec-vin{flex:0 0 130px;font-family:monospace;font-weight:700;color:#1b5e20;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cond-rec-info{flex:1 1 auto;min-width:0;font-size:11px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .cond-rec-concepto-badge{flex:0 0 auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;}
-  .cond-rec-concepto-badge.ok{background:var(--grn-l);color:var(--grn);}
-  .cond-rec-concepto-badge.nov{background:var(--bad-l);color:var(--bad);}
-  .cond-rec-concepto-badge.pend{background:var(--surface-1);color:var(--text-muted);}
-  .btn-ver-fotos{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;background:var(--ua-grn-l);color:var(--ua-grn-d);border:none;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
-  .cond-rec-pin{flex:0 0 20px;color:var(--bad);font-size:16px;cursor:pointer;text-align:center;text-decoration:none;}
+  .cond-rec-concepto-badge.ok{background:#e8f5e9;color:#2e7d32;}
+  .cond-rec-concepto-badge.nov{background:#fdecea;color:#c62828;}
+  .cond-rec-concepto-badge.pend{background:#f1f3f4;color:#555;}
+  .btn-ver-fotos{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;background:#e8f5e9;color:#2e7d32;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .cond-rec-pin{flex:0 0 20px;color:#e53935;font-size:16px;cursor:pointer;text-align:center;text-decoration:none;}
   @media(max-width:480px){
     .cond-rec-row{overflow-x:auto;}
     .cond-rec-info{display:none;}
   }
 
-  /* ═══ Modal visor de fotos ═══ */
+  /* ═══ Modal visor de fotos — v2 ═══ */
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  .foto-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.2rem;backdrop-filter:blur(6px);animation:fadeIn .2s ease;}
+  .foto-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.2rem;backdrop-filter:blur(8px);animation:fadeIn .2s ease;}
   .foto-modal{background:#fff;border-radius:16px;width:90vw;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:fadeUp .25s ease;}
   .foto-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
   .foto-modal-title{font-size:14px;font-weight:700;color:var(--text-primary);}
   .foto-modal-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
-  .foto-modal-close{background:var(--surface-1);border:none;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);flex-shrink:0;}
+  .foto-modal-close{background:var(--surface-1);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);flex-shrink:0;}
   .foto-modal-body{padding:16px;overflow-y:auto;}
   .foto-modal-grid{display:grid;grid-template-columns:repeat(3,100px);justify-content:center;gap:10px;}
   .foto-modal-grid img{width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
   .foto-modal-empty{text-align:center;padding:20px 10px;color:var(--text-muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .foto-modal-footer{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
-  .btn-drive-full{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;text-decoration:none;}
+  .btn-drive-full{display:flex;align-items:center;justify-content:center;gap:6px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;text-decoration:none;}
 
   .trayectos-empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px;}
 
@@ -812,7 +812,7 @@
           <div class="conductores-sub" id="rcount">0 registro(s)</div>
         </div>
       </div>
-      <div style="padding:14px 14px 4px;" id="records-list"></div>
+      <div style="padding:16px 14px 8px;" id="records-list"></div>
     </div>
   </div>
 </div>
@@ -1568,7 +1568,7 @@ function renderRecords(){
 
   if(!recs.length){
     if(count)count.textContent='0 registro(s)';
-    list.innerHTML=`<div class="empty-st"><div class="empty-st-icon"><i class="ti ti-clipboard-x"></i></div>No hay registros con esos filtros.</div>`;
+    list.innerHTML=`<div class="empty-st" style="padding:32px;"><div class="empty-st-icon"><i class="ti ti-clipboard-x"></i></div>Aún no hay registros.</div>`;
     return;
   }
 
@@ -1661,7 +1661,7 @@ function openFotosModal(recId){
   } else {
     body=`<div class="foto-modal-empty"><i class="ti ti-camera" style="font-size:32px;color:var(--text-muted)"></i><p>No hay fotos disponibles todavía para este registro. Puede que aún no se haya sincronizado la carpeta de Drive.</p></div>`;
   }
-  const footer=r.folderLink?`<div class="foto-modal-footer"><a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Ver en Drive ↗</a></div>`:'';
+  const footer=r.folderLink?`<div class="foto-modal-footer"><a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Ver carpeta en Drive ↗</a></div>`:'';
 
   const ov=document.createElement('div');
   ov.id='fotos-modal-ov';
