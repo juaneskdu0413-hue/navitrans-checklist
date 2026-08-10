@@ -362,56 +362,57 @@
   .conductor-badge{background:var(--surface-1);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ua-grn);white-space:nowrap;flex-shrink:0;}
 
   /* Tarjetas de conductor en el listado de registros (agrupadas) */
-  .cond-card{background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+  /* ═══ Tarjeta de conductor (colapsada) ═══ */
+  .cond-card{background:#fff;border-left:4px solid var(--ua-grn);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px;transition:box-shadow .2s ease;}
+  .cond-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.14);}
   .cond-card-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+  .cond-avatar{width:40px;height:40px;border-radius:50%;background:var(--ua-grn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
   .cond-info{flex:1;min-width:0;}
-  .cond-name{font-size:14px;font-weight:700;color:var(--text-primary);}
-  .cond-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);margin-top:3px;}
-  .cond-vins{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-  .cond-vin-chip{background:var(--surface-1);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:10px;font-family:monospace;color:var(--text-secondary);}
-  .cond-vin-chip.more{color:var(--ua-grn-d);font-weight:700;}
-  .cond-side{text-align:center;flex-shrink:0;}
-  .cond-total{font-size:20px;font-weight:800;color:var(--ua-grn);line-height:1;}
-  .cond-total-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+  .cond-name{font-size:15px;font-weight:700;color:var(--text-primary);}
+  .cond-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .cond-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .cond-badge.rec{background:var(--ua-grn-l);color:var(--ua-grn-d);}
+  .cond-badge.ent{background:#eef1f4;color:#4b5563;}
+  .cond-fecha{font-size:11px;color:var(--text-muted);font-weight:500;}
+  .cond-side{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .cond-total-badge{background:var(--ua-grn);color:#fff;font-size:13px;font-weight:800;border-radius:20px;padding:5px 13px;min-width:20px;text-align:center;line-height:1;}
   .cond-chev{font-size:18px;color:var(--text-muted);transition:transform .25s ease;flex-shrink:0;}
-  .cond-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:var(--surface-0);}
+  .cond-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:#f8f9fb;}
   .cond-card-body.open{max-height:6000px;}
 
-  /* Fila de registro individual — fondo alterno + separador sutil */
-  .cond-rec-row{padding:12px 16px;border-top:1px solid var(--border);}
-  .cond-rec-row:nth-child(odd){background:var(--surface-0);}
-  .cond-rec-row:nth-child(even){background:var(--surface-1);}
-  .cond-rec-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-  .cond-rec-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:3px 9px;border-radius:20px;}
-  .cond-rec-tag.rec{background:var(--ua-grn-l);color:var(--ua-grn-d);}
-  .cond-rec-tag.ent{background:#eef1f5;color:var(--nvt);}
-  .cond-rec-datetime{font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:4px;}
-  .cond-rec-vin{font-size:14px;font-weight:700;font-family:monospace;color:var(--text-primary);margin-top:7px;}
-  .cond-rec-city{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;margin-top:4px;}
-  .cond-rec-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px;}
-  .concepto-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
-  .concepto-badge.ok{background:var(--grn-l);color:var(--grn);}
-  .concepto-badge.nov{background:var(--warn-l);color:var(--warn);}
-  .concepto-badge.pend{background:var(--surface-1);color:var(--text-muted);border:1px solid var(--border);}
-  .cond-rec-fotos-count{font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:4px;}
-  .cond-rec-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;}
-  .btn-ver-fotos,.btn-ver-ubicacion{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:6px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;}
-  .btn-ver-fotos{background:var(--ua-grn-l);color:var(--ua-grn-d);}
-  .btn-ver-ubicacion{background:#eef1f5;color:var(--nvt);}
+  /* ═══ Registros expandidos ═══ */
+  .cond-rec-row{display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;border-bottom:1px solid var(--border);}
+  .cond-rec-row:last-child{border-bottom:none;}
+  .cond-rec-tipo{flex:0 0 66px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:4px 6px;border-radius:5px;text-align:center;}
+  .cond-rec-tipo.origen{background:var(--ua-grn-l);color:var(--ua-grn-d);}
+  .cond-rec-tipo.destino{background:#4b5563;color:#fff;}
+  .cond-rec-vin{flex:0 0 122px;font-family:monospace;font-weight:700;color:var(--ua-grn-d);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cond-rec-info{flex:1 1 auto;min-width:0;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cond-rec-concepto-badge{flex:0 0 auto;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+  .cond-rec-concepto-badge.ok{background:var(--grn-l);color:var(--grn);}
+  .cond-rec-concepto-badge.nov{background:var(--bad-l);color:var(--bad);}
+  .cond-rec-concepto-badge.pend{background:var(--surface-1);color:var(--text-muted);}
+  .btn-ver-fotos{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;background:var(--ua-grn-l);color:var(--ua-grn-d);border:none;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .cond-rec-pin{flex:0 0 20px;color:var(--bad);font-size:16px;cursor:pointer;text-align:center;text-decoration:none;}
+  @media(max-width:480px){
+    .cond-rec-row{overflow-x:auto;}
+    .cond-rec-info{display:none;}
+  }
 
-  /* Modal visor de fotos */
-  .foto-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.2rem;backdrop-filter:blur(4px);}
-  .foto-modal{background:var(--surface-0);border-radius:16px;max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+  /* ═══ Modal visor de fotos ═══ */
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .foto-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.2rem;backdrop-filter:blur(6px);animation:fadeIn .2s ease;}
+  .foto-modal{background:#fff;border-radius:16px;width:90vw;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:fadeUp .25s ease;}
   .foto-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
   .foto-modal-title{font-size:14px;font-weight:700;color:var(--text-primary);}
   .foto-modal-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
   .foto-modal-close{background:var(--surface-1);border:none;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);flex-shrink:0;}
   .foto-modal-body{padding:16px;overflow-y:auto;}
-  .foto-modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-  .foto-modal-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid var(--border);}
-  .foto-modal-iframe{width:100%;height:320px;border:1px solid var(--border);border-radius:10px;}
+  .foto-modal-grid{display:grid;grid-template-columns:repeat(3,100px);justify-content:center;gap:10px;}
+  .foto-modal-grid img{width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
   .foto-modal-empty{text-align:center;padding:20px 10px;color:var(--text-muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;}
-  .btn-drive-full{display:inline-flex;align-items:center;gap:6px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;text-decoration:none;margin-top:10px;}
+  .foto-modal-footer{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
+  .btn-drive-full{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;text-decoration:none;}
 
   .trayectos-empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px;}
 
@@ -1593,28 +1594,23 @@ function renderRecords(){
     const initials=g.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
     const fecha=new Date(g.ultimo);
     const fs=fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
-    const VMAX=4;
-    const vinChips=g.vins.slice(0,VMAX).map(v=>`<span class="cond-vin-chip">${v}</span>`).join('')
-      +(g.vins.length>VMAX?`<span class="cond-vin-chip more">+${g.vins.length-VMAX} más</span>`:'');
     const filas=g.registros.map(buildCondRecRow).join('');
 
     return `<div class="cond-card">
       <div class="cond-card-hd" onclick="toggleCond(${idx})">
-        <div class="rc-avatar" style="background:var(--ua-grn-l);color:var(--ua-grn-d)">${initials}</div>
+        <div class="cond-avatar">${initials}</div>
         <div class="cond-info">
           <div class="cond-name">${g.nombre}</div>
           <div class="cond-meta">
-            <span><i class="ti ti-truck-loading" style="font-size:11px"></i> ${g.recepciones} recep.</span>
-            <span><i class="ti ti-circle-check" style="font-size:11px"></i> ${g.entregas} entr.</span>
-            <span><i class="ti ti-calendar" style="font-size:11px"></i> ${fs}</span>
+            <span class="cond-badge rec">${g.recepciones} recepciones</span>
+            <span class="cond-badge ent">${g.entregas} entregas</span>
+            <span class="cond-fecha">Último: ${fs}</span>
           </div>
-          <div class="cond-vins">${vinChips}</div>
         </div>
         <div class="cond-side">
-          <div class="cond-total">${g.registros.length}</div>
-          <div class="cond-total-lbl">registros</div>
+          <div class="cond-total-badge">${g.registros.length}</div>
+          <i class="ti ti-chevron-down cond-chev" id="cond-chev-${idx}"></i>
         </div>
-        <i class="ti ti-chevron-down cond-chev" id="cond-chev-${idx}"></i>
       </div>
       <div class="cond-card-body" id="cond-body-${idx}">${filas}</div>
     </div>`;
@@ -1624,26 +1620,19 @@ function renderRecords(){
 function buildCondRecRow(r){
   const fecha=new Date(r.timestamp);
   const fs=fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
-  const hs=fecha.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const isRec=r.mode==='recepcion';
-  const tag=isRec?`<span class="cond-rec-tag rec">Puerto</span>`:`<span class="cond-rec-tag ent">Entrega</span>`;
-  const concepto=r.concepto==='ok'?{cls:'ok',icon:'✅',txt:'Sin novedades'}:r.concepto==='nov'?{cls:'nov',icon:'⚠️',txt:'Con novedades'}:{cls:'pend',icon:'—',txt:'Concepto pendiente'};
-  const ubicBtn=r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" class="btn-ver-ubicacion" onclick="event.stopPropagation()">📍 Ver ubicación</a>`:'';
+  const tipo=isRec?`<div class="cond-rec-tipo origen">ORIGEN</div>`:`<div class="cond-rec-tipo destino">DESTINO</div>`;
+  const concepto=r.concepto==='ok'?{cls:'ok',txt:'Sin novedades'}:r.concepto==='nov'?{cls:'nov',txt:'Con novedades'}:{cls:'pend',txt:'Pendiente'};
+  const fotos=r.fotos||0;
+  const fotosBtn=fotos>0?`<button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})">📷 Fotos (${fotos})</button>`:'';
+  const pin=r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" class="cond-rec-pin" title="Ver ubicación GPS" onclick="event.stopPropagation()"><i class="ti ti-map-pin"></i></a>`:'';
   return `<div class="cond-rec-row">
-    <div class="cond-rec-hd">
-      ${tag}
-      <span class="cond-rec-datetime"><i class="ti ti-calendar" style="font-size:11px"></i> ${fs} · ${hs}</span>
-    </div>
+    ${tipo}
     <div class="cond-rec-vin">${r.vin||'—'}</div>
-    <div class="cond-rec-city"><i class="ti ti-map-pin" style="font-size:12px"></i> ${r.ciudad||'—'}</div>
-    <div class="cond-rec-bottom">
-      <span class="concepto-badge ${concepto.cls}">${concepto.icon} ${concepto.txt}</span>
-      <span class="cond-rec-fotos-count"><i class="ti ti-camera" style="font-size:11px"></i> ${r.fotos||0} foto(s)</span>
-    </div>
-    <div class="cond-rec-actions">
-      <button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})">📷 Ver fotos</button>
-      ${ubicBtn}
-    </div>
+    <div class="cond-rec-info">${r.ciudad||'—'} · ${fs}</div>
+    <span class="cond-rec-concepto-badge ${concepto.cls}">${concepto.txt}</span>
+    ${fotosBtn}
+    ${pin}
   </div>`;
 }
 
@@ -1663,24 +1652,15 @@ function openFotosModal(recId){
 
   closeFotosModal();
 
-  let folderId=null;
-  if(r.folderLink){
-    const m=r.folderLink.match(/[-\w]{25,}/);
-    if(m) folderId=m[0];
-  }
-
   let body;
   if(r.fotosData && r.fotosData.length){
     body=`<div class="foto-modal-grid">${r.fotosData.map(f=>`<a href="${f.dataUrl}" target="_blank"><img src="${f.dataUrl}" alt="${f.name||''}"></a>`).join('')}</div>`;
-  } else if(folderId){
-    body=`<iframe src="https://drive.google.com/embeddedfolderview?id=${folderId}#grid" class="foto-modal-iframe"></iframe>
-      <a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Abrir carpeta en Drive ↗</a>`;
   } else if(r.folderLink){
-    body=`<div class="foto-modal-empty"><i class="ti ti-brand-google-drive" style="font-size:32px;color:var(--ua-grn)"></i><p>Las fotos de este registro están guardadas en Google Drive.</p>
-      <a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Abrir carpeta en Drive ↗</a></div>`;
+    body=`<div class="foto-modal-empty"><i class="ti ti-brand-google-drive" style="font-size:32px;color:var(--ua-grn)"></i><p>Las fotos de este registro están guardadas en Google Drive.</p></div>`;
   } else {
     body=`<div class="foto-modal-empty"><i class="ti ti-camera" style="font-size:32px;color:var(--text-muted)"></i><p>No hay fotos disponibles todavía para este registro. Puede que aún no se haya sincronizado la carpeta de Drive.</p></div>`;
   }
+  const footer=r.folderLink?`<div class="foto-modal-footer"><a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Ver en Drive ↗</a></div>`:'';
 
   const ov=document.createElement('div');
   ov.id='fotos-modal-ov';
@@ -1688,13 +1668,11 @@ function openFotosModal(recId){
   ov.onclick=(e)=>{if(e.target===ov) closeFotosModal();};
   ov.innerHTML=`<div class="foto-modal">
     <div class="foto-modal-hd">
-      <div>
-        <div class="foto-modal-title">Fotos — ${r.vin||'—'}</div>
-        <div class="foto-modal-sub">${r.conductor||''} · ${r.mode==='recepcion'?'Recepción':'Entrega'}</div>
-      </div>
+      <div class="foto-modal-title">Fotos del registro · ${r.vin||'—'}</div>
       <button class="foto-modal-close" onclick="closeFotosModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="foto-modal-body">${body}</div>
+    ${footer}
   </div>`;
   document.body.appendChild(ov);
 }
