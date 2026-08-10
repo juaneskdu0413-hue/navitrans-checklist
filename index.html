@@ -1354,7 +1354,11 @@ async function enviarSheets(reg,archivos){
   if(!SHEETS_URL) return {ok:false};
   try{
     const resp=await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({accion:'checklist',datos:reg})});
-    const result=await resp.json();
+    let result=null;
+    try{
+      const txt=await resp.text();
+      result=JSON.parse(txt);
+    }catch(e){result=null;}
     const validos=archivos.filter(f=>f);
     const ul=document.getElementById('upload-list');
     for(let i=0;i<validos.length;i++){
