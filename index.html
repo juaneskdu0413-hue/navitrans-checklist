@@ -1492,13 +1492,14 @@ function renderConductores(recs){
 
   const map={};
   recs.forEach(r=>{
-    const nombre=(r.conductor||'').trim();
+    const nombre=(r.conductor||'').trim().replace(/\s+/g,' ');
     if(!nombre) return;
-    if(!map[nombre]) map[nombre]={nombre, total:0, recepciones:0, entregas:0, ultimo:null};
-    map[nombre].total++;
-    if(r.mode==='recepcion') map[nombre].recepciones++;
-    if(r.mode==='entrega') map[nombre].entregas++;
-    if(!map[nombre].ultimo || new Date(r.timestamp)>new Date(map[nombre].ultimo)) map[nombre].ultimo=r.timestamp;
+    const key=nombre.toLowerCase();
+    if(!map[key]) map[key]={nombre, total:0, recepciones:0, entregas:0, ultimo:null};
+    map[key].total++;
+    if(r.mode==='recepcion') map[key].recepciones++;
+    if(r.mode==='entrega') map[key].entregas++;
+    if(!map[key].ultimo || new Date(r.timestamp)>new Date(map[key].ultimo)) map[key].ultimo=r.timestamp;
   });
 
   const conductoresArr=Object.values(map).sort((a,b)=>b.total-a.total);
@@ -1553,10 +1554,10 @@ function renderRecords(){
     return;
   }
 
-  // Agrupar registros por conductor (nombre normalizado)
+  // Agrupar registros por conductor (nombre normalizado: trim + minúsculas + sin espacios dobles)
   const grupos={};
   recs.forEach(r=>{
-    const nombre=(r.conductor||'').trim();
+    const nombre=(r.conductor||'').trim().replace(/\s+/g,' ');
     const key=nombre.toLowerCase()||'—';
     if(!grupos[key]) grupos[key]={nombre:nombre||'Sin nombre',registros:[]};
     grupos[key].registros.push(r);
