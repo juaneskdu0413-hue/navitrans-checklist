@@ -560,7 +560,7 @@
     <div class="sc">
       <div class="sh2"><div class="sn r" id="sn8">8</div><div class="st">Registros Fotográficos y Videos</div></div>
       <div class="sb">
-        <div class="info-box red"><i class="ti ti-camera" style="font-size:15px;margin-top:1px"></i>Documenta espejos, vidrios, puertas, carrocería. Mínimo 4 fotos recomendadas.</div>
+        <div class="info-box red"><i class="ti ti-camera" style="font-size:15px;margin-top:1px"></i>Documenta espejos, vidrios, puertas, carrocería. Mínimo 7 fotos recomendadas.</div>
         <input type="file" id="file-input" accept="image/*,video/*" multiple onchange="handleFiles(event)">
         <div class="photo-zone" onclick="document.getElementById('file-input').click()">
           <div class="pz-icon"><i class="ti ti-camera-plus"></i></div>
@@ -707,7 +707,7 @@
         <option value="nov">Con novedades</option>
       </select>
       <input class="filter-inp" type="text" id="f-search" placeholder="🔍 Buscar por VIN o conductor..." oninput="renderRecords()">
-      <button class="btn-export" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i> Exportar CSV</button>
+      <button class="btn-export" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i> Exportar Excel</button>
     </div>
     <!-- Config tiempo máximo -->
     <div class="tiempo-config">
@@ -752,7 +752,7 @@ let mode='recepcion', files=[], lavVal=null, concVal=null, novOpen=false;
 
 // ── ESCÁNER DE DOCUMENTOS ─────────────────────────────────────────
 const DOCS_SCAN = ['Permiso del Min Transp','SOAT','Manual del Vehículo','Llaves / Entrega de llaves','Carpeta Documental'];
-const DOCS_PUERTO = ['Checklist de Puerto','Tirilla del Puerto','Otro documento'];
+const DOCS_PUERTO = ['Checklist de Destino','Tirilla del Puerto','Otro documento'];
 let scanDocs = {}; // { index: { dataUrl, blob, name } }
 let scanTarget = null;
 let scanStream = null;
@@ -1030,6 +1030,7 @@ function startForm(m){
   document.getElementById('f-vin').value='';
   scanDocs={};
   initDocScanner();
+  vinBuscado='';
 
   const isRec=m==='recepcion';
   const hdr=document.getElementById('fhdr');
@@ -1055,43 +1056,120 @@ function startForm(m){
 }
 
 // ── AUTOCOMPLETAR ENTREGA DESDE RECEPCIÓN ─────────────────────────
+// Busca primero en Google Sheets (cualquier celular), luego local
+let vinBuscado = '';
+
 function autocompletarDesdeRecepcion(){
   if(mode!=='entrega') return;
   const vin=document.getElementById('f-vin').value.trim().toUpperCase();
-  if(vin.length < 6) return;
+  if(vin.length < 6 || vin === vinBuscado) return;
+  vinBuscado = vin;
+
+  // Mostrar indicador de búsqueda
+  mostrarBuscando(vin);
+
+  // 1. Intentar buscar en Google Sheets primero
+  if(SHEETS_URL){
+    const url = SHEETS_URL.replace('/exec', '/exec') + '?vin=' + encodeURIComponent(vin);
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if(data.ok && data.recepcion){
+          aplicarAutocompletado(data.recepcion, vin, '☁️ Datos jalados desde Google Sheets');
+        } else {
+          // 2. Si no está en Sheets, buscar local
+          buscarLocal(vin);
+        }
+      })
+      .catch(() => buscarLocal(vin));
+  } else {
+    buscarLocal(vin);
+  }
+}
+
+function buscarLocal(vin){
   const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
-  const recepcion=recs.find(r=>r.mode==='recepcion' && r.vin===vin);
-  if(!recepcion) return;
-  // Autocompletar campos
+  const recepcion=recs.find(r=>r.mode==='recepcion' && (r.vin||'').toUpperCase()===vin);
+  if(recepcion){
+    aplicarAutocompletado(recepcion, vin, '📱 Datos jalados desde este dispositivo');
+  } else {
+    quitarBanner();
+  }
+}
+
+function mostrarBuscando(vin){
+  quitarBanner();
+  const banner=document.createElement('div');
+  banner.id='autocomplete-banner';
+  banner.style.cssText='background:#f3f4f6;color:#6b7280;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:8px;border:1px solid #e4e7ed;';
+  banner.innerHTML=`<i class="ti ti-loader-2" style="font-size:18px;animation:spin 1s linear infinite"></i><span>Buscando recepción del VIN ${vin} en el servidor...</span>`;
+  const sb=document.querySelector('.fbody');
+  if(sb) sb.insertBefore(banner, sb.firstChild);
+}
+
+function quitarBanner(){
+  const b=document.getElementById('autocomplete-banner');
+  if(b) b.remove();
+}
+
+function aplicarAutocompletado(rec, vin, fuente){
   const campos = [
-    ['f-conductor', recepcion.conductor],
-    ['f-orden',     recepcion.orden],
-    ['f-tipo',      recepcion.tipo],
-    ['f-marca',     recepcion.marca],
-    ['f-modelo',    recepcion.modelo],
-    ['f-motor',     recepcion.motor],
-    ['f-chasis',    recepcion.chasis],
-    ['f-km',        recepcion.km],
-    ['f-placa',     recepcion.placa],
+    ['f-conductor', rec.conductor],
+    ['f-orden',     rec.orden],
+    ['f-ciudad',    rec.ciudad],
+    ['f-tipo',      rec.tipo],
+    ['f-marca',     rec.marca],
+    ['f-modelo',    rec.modelo],
+    ['f-motor',     rec.motor],
+    ['f-chasis',    rec.chasis],
+    ['f-km',        rec.km],
+    ['f-placa',     rec.placa],
   ];
+
   let llenados=0;
   campos.forEach(([id,val])=>{
     const el=document.getElementById(id);
-    if(el && val && !el.value){ el.value=val; llenados++; }
-  });
-  if(llenados>0){
-    // Mostrar banner de autocompletado
-    let banner=document.getElementById('autocomplete-banner');
-    if(!banner){
-      banner=document.createElement('div');
-      banner.id='autocomplete-banner';
-      banner.style.cssText='background:linear-gradient(135deg,#2d8a29,#3aaa35);color:#fff;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:4px;animation:fadeUp .3s ease;';
-      banner.innerHTML='<i class="ti ti-check-circle" style="font-size:16px"></i> Datos autocompletados desde la recepción del VIN '+vin;
-      const sb=document.querySelector('.fbody');
-      if(sb) sb.insertBefore(banner, sb.firstChild);
+    if(el && val){
+      el.value=val;
+      el.style.transition='all .3s';
+      el.style.borderColor='var(--ua-grn)';
+      el.style.background='var(--ua-grn-l)';
+      setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; }, 3000);
+      llenados++;
     }
-    updateProgress();
+  });
+
+  // Autocompletar checklist si hay datos locales
+  if(rec.docs){
+    rec.docs.forEach((doc,i)=>{
+      if(doc.val){ const r=document.querySelector(`input[name="doc_${i}"][value="${doc.val}"]`); if(r) r.checked=true; }
+    });
   }
+  if(rec.exterior){
+    rec.exterior.forEach((ext,i)=>{
+      if(ext.val){ const r=document.querySelector(`input[name="ext_${i}"][value="${ext.val}"]`); if(r) r.checked=true; }
+      if(ext.obs){ const o=document.getElementById(`ext_o_${i}`); if(o) o.value=ext.obs; }
+    });
+  }
+  if(rec.llantas){
+    rec.llantas.forEach((ll,i)=>{
+      if(ll.val){ const r=document.querySelector(`input[name="ll_${i}"][value="${ll.val}"]`); if(r) r.checked=true; }
+    });
+  }
+  if(rec.accesorios){
+    rec.accesorios.forEach(acc=>{ const i=ACC.indexOf(acc); if(i>=0) togAcc(i); });
+  }
+
+  // Banner de éxito
+  quitarBanner();
+  const banner=document.createElement('div');
+  banner.id='autocomplete-banner';
+  banner.style.cssText='background:linear-gradient(135deg,#2d8a29,#3aaa35);color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;margin-bottom:8px;animation:fadeUp .3s ease;box-shadow:0 4px 12px rgba(45,138,41,.3);';
+  banner.innerHTML=`<i class="ti ti-sparkles" style="font-size:18px"></i><div><div>Datos completados automáticamente</div><div style="font-size:11px;font-weight:400;opacity:.85;margin-top:2px">${fuente} · VIN ${vin}</div></div>`;
+  const sb=document.querySelector('.fbody');
+  if(sb) sb.insertBefore(banner, sb.firstChild);
+
+  if(llenados>0) updateProgress();
 }
 
 function getGPS(){
@@ -1562,8 +1640,112 @@ function renderTrayectos(){
 function exportCSV(){
   const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
   if(!recs.length){alert('No hay registros para exportar.');return;}
-  const cols=['ID','Timestamp','Modo','Conductor','VIN','Orden','Ciudad','Tipo','Marca','Modelo','Motor','Chasis','KM','Latitud','Longitud','Concepto','Novedad','Zona Novedad','Lavado','Fotos','Accesorios','Hash SHA-256','Sellado'];
-  const rows=recs.map(r=>[r.id,r.timestamp,r.mode,r.conductor,r.vin,r.orden,r.ciudad,r.tipo,r.marca,r.modelo,r.motor,r.chasis,r.km,r.lat,r.lng,r.concepto,r.novedad,r.novedad_zona,r.lavado,r.fotos,(r.accesorios||[]).join(' | '),r.hash,r.sellado?'SI':'NO'].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+
+  // Cargar SheetJS dinámicamente
+  const script=document.createElement('script');
+  script.src='https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
+  script.onload=()=>generarExcel(recs);
+  script.onerror=()=>exportCSVFallback(recs);
+  document.head.appendChild(script);
+}
+
+function generarExcel(recs){
+  const wb = XLSX.utils.book_new();
+  const fecha = new Date().toLocaleDateString('es-CO');
+
+  const cols = ['ID','Fecha y Hora','Modo','Conductor','VIN','Pedido Importación',
+    'Ciudad Origen','Placa','Tipo Unidad','Marca','Modelo','Motor No.','Chasis No.','KM',
+    'Ciudad Destino','Latitud','Longitud','Concepto','Novedad','Zona Novedad',
+    'Lavado','Fotos','Accesorios','Hash SHA-256','Sellado'];
+
+  const toRow = r => [
+    r.id, r.timestamp, r.mode==='recepcion'?'Recepción':'Entrega',
+    r.conductor, r.vin, r.orden, r.ciudad, r.placa||'',
+    r.tipo, r.marca, r.modelo, r.motor, r.chasis, r.km,
+    r.ciudad_destino||'', r.lat, r.lng,
+    r.concepto==='ok'?'Sin novedades':r.concepto==='nov'?'Con novedades':'',
+    r.novedad||'', r.novedad_zona||'', r.lavado||'',
+    r.fotos, (r.accesorios||[]).join(' | '),
+    r.hash||'', r.sellado?'SÍ':'NO'
+  ];
+
+  const recepciones = recs.filter(r=>r.mode==='recepcion');
+  const entregas    = recs.filter(r=>r.mode==='entrega');
+
+  // Hoja Recepciones
+  const wsR = XLSX.utils.aoa_to_sheet([cols, ...recepciones.map(toRow)]);
+  estilizarHoja(wsR, recepciones.length, cols.length, '3aaa35');
+  XLSX.utils.book_append_sheet(wb, wsR, '📥 Recepciones');
+
+  // Hoja Entregas
+  const wsE = XLSX.utils.aoa_to_sheet([cols, ...entregas.map(toRow)]);
+  estilizarHoja(wsE, entregas.length, cols.length, '1a1a1a');
+  XLSX.utils.book_append_sheet(wb, wsE, '📤 Entregas');
+
+  // Hoja Todos
+  const wsT = XLSX.utils.aoa_to_sheet([cols, ...recs.map(toRow)]);
+  estilizarHoja(wsT, recs.length, cols.length, 'f5a800');
+  XLSX.utils.book_append_sheet(wb, wsT, '📋 Todos los registros');
+
+  XLSX.writeFile(wb, `Navitrans_Registros_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function estilizarHoja(ws, nRows, nCols, headerColor){
+  // Anchos de columna
+  const anchos = [12,20,12,20,20,18,16,12,14,12,12,14,14,10,16,14,14,14,28,18,12,10,25,32,10];
+  ws['!cols'] = anchos.map(w=>({wch:w}));
+
+  // Estilo header
+  const XLSX = window.XLSX;
+  for(let c=0; c<nCols; c++){
+    const cell = XLSX.utils.encode_cell({r:0,c});
+    if(!ws[cell]) continue;
+    ws[cell].s = {
+      font:{bold:true, color:{rgb:'FFFFFF'}, sz:9, name:'Arial'},
+      fill:{patternType:'solid', fgColor:{rgb:headerColor}},
+      alignment:{horizontal:'center', vertical:'center', wrapText:true},
+      border:{
+        top:{style:'thin',color:{rgb:'FFFFFF'}},
+        bottom:{style:'thin',color:{rgb:'FFFFFF'}},
+        left:{style:'thin',color:{rgb:'FFFFFF'}},
+        right:{style:'thin',color:{rgb:'FFFFFF'}}
+      }
+    };
+  }
+
+  // Estilo filas de datos
+  for(let r=1; r<=nRows; r++){
+    const bg = r%2===0?'f8f9fb':'FFFFFF';
+    for(let c=0; c<nCols; c++){
+      const cell = XLSX.utils.encode_cell({r,c});
+      if(!ws[cell]) ws[cell]={v:'',t:'s'};
+      ws[cell].s = {
+        font:{sz:9, name:'Arial', color:{rgb:'111827'}},
+        fill:{patternType:'solid', fgColor:{rgb:bg}},
+        alignment:{horizontal:'center', vertical:'center'},
+        border:{bottom:{style:'thin',color:{rgb:'e4e7ed'}}}
+      };
+      // Colorear concepto
+      if(c===17 && ws[cell].v){
+        if(ws[cell].v.includes('Sin')){
+          ws[cell].s.font.color={rgb:'16a34a'};
+          ws[cell].s.fill={patternType:'solid',fgColor:{rgb:'dcfce7'}};
+        } else if(ws[cell].v.includes('Con')){
+          ws[cell].s.font.color={rgb:'dc2626'};
+          ws[cell].s.fill={patternType:'solid',fgColor:{rgb:'fee2e2'}};
+        }
+      }
+    }
+  }
+
+  // Altura de filas
+  ws['!rows'] = [{hpt:30},...Array(nRows).fill({hpt:18})];
+  ws['!autofilter'] = {ref: XLSX.utils.encode_range({s:{r:0,c:0},e:{r:nRows,c:nCols-1}})};
+}
+
+function exportCSVFallback(recs){
+  const cols=['ID','Timestamp','Modo','Conductor','VIN','Ciudad','Placa','Concepto','Fotos','Hash'];
+  const rows=recs.map(r=>[r.id,r.timestamp,r.mode,r.conductor,r.vin,r.ciudad,r.placa||'',r.concepto,r.fotos,r.hash||''].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
