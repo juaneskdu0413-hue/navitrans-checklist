@@ -803,20 +803,17 @@
       <div class="trayectos-list" id="trayectos-list"></div>
     </div>
 
-    <!-- Sección conductores únicos -->
+    <!-- Sección conductores: tarjetas expandibles -->
     <div class="conductores-section" style="margin-top:14px;">
       <div class="conductores-header">
         <div class="conductores-header-icon"><i class="ti ti-users"></i></div>
-        <div>
-          <div class="conductores-title">Conductores Únicos</div>
-          <div class="conductores-sub" id="conductores-sub">0 conductor(es) con registros</div>
+        <div style="flex:1;">
+          <div class="conductores-title">Conductores · Registros</div>
+          <div class="conductores-sub" id="rcount">0 registro(s)</div>
         </div>
       </div>
-      <div class="conductores-list" id="conductores-list"></div>
+      <div style="padding:14px 14px 4px;" id="records-list"></div>
     </div>
-
-    <div class="rcount" id="rcount"></div>
-    <div id="records-list"></div>
   </div>
 </div>
 
@@ -1503,8 +1500,8 @@ function renderStats(recs){
     <div class="stat-card accent"><i class="ti ti-alert-triangle stat-card-icon" style="color:var(--warn)"></i><div class="stat-val" style="color:var(--warn)">${conNov}</div><div class="stat-lbl">Con novedades</div></div>
     <div class="stat-card dark"><i class="ti ti-users stat-card-icon" style="color:var(--nvt)"></i><div class="stat-val" style="color:var(--nvt)">${conductores}</div><div class="stat-lbl">Conductores</div></div>`;
 
-  renderConductores(recs);
 }
+// renderConductores ya no se usa — conductores van en records-list como tarjetas expandibles
 
 // ── CONDUCTORES ÚNICOS ──────────────────────────────────────────────
 function renderConductores(recs){
