@@ -342,6 +342,25 @@
   .efic-lbl{font-size:11px;color:var(--text-muted);margin-top:5px;text-transform:uppercase;letter-spacing:.4px;font-weight:500;}
   .efic-sub{font-size:11px;margin-top:3px;font-weight:500;}
 
+  /* Íconos en stat-cards */
+  .stat-card{padding-right:38px;}
+  .stat-card-icon{position:absolute;top:12px;right:12px;font-size:18px;opacity:.25;}
+
+  /* Conductores únicos */
+  .conductores-section{background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+  .conductores-header{padding:14px 16px;background:linear-gradient(135deg,#1a1a1a 0%,#2a6b27 100%);color:#fff;display:flex;align-items:center;gap:10px;}
+  .conductores-header-icon{width:32px;height:32px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .conductores-title{font-size:14px;font-weight:700;}
+  .conductores-sub{font-size:11px;opacity:.6;margin-top:1px;}
+  .conductores-list{display:flex;flex-direction:column;gap:0;max-height:340px;overflow-y:auto;}
+  .conductor-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .conductor-item:last-child{border-bottom:none;}
+  .conductor-avatar{width:36px;height:36px;border-radius:50%;background:var(--ua-grn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .conductor-info{flex:1;min-width:0;}
+  .conductor-name{font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .conductor-meta{font-size:11px;color:var(--text-muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;}
+  .conductor-badge{background:var(--surface-1);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ua-grn);white-space:nowrap;flex-shrink:0;}
+
   .trayectos-empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px;}
 
 
@@ -729,6 +748,18 @@
       </div>
       <div id="eficiencia-grid" class="eficiencia-grid" style="padding:14px 16px;border-bottom:1px solid var(--border);"></div>
       <div class="trayectos-list" id="trayectos-list"></div>
+    </div>
+
+    <!-- Sección conductores únicos -->
+    <div class="conductores-section" style="margin-top:14px;">
+      <div class="conductores-header">
+        <div class="conductores-header-icon"><i class="ti ti-users"></i></div>
+        <div>
+          <div class="conductores-title">Conductores Únicos</div>
+          <div class="conductores-sub" id="conductores-sub">0 conductor(es) con registros</div>
+        </div>
+      </div>
+      <div class="conductores-list" id="conductores-list"></div>
     </div>
 
     <div class="rcount" id="rcount"></div>
@@ -1401,14 +1432,59 @@ function renderStats(recs){
   const enTiempoCount=Object.values(vinMap).filter(v=>v.rec&&v.ent&&((new Date(v.ent.timestamp)-new Date(v.rec.timestamp))/3600000)<=maxH).length;
 
   document.getElementById('admin-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-val r">${total}</div><div class="stat-lbl">Total registros</div></div>
-    <div class="stat-card"><div class="stat-val r">${recepciones}</div><div class="stat-lbl">Recepciones</div></div>
-    <div class="stat-card dark"><div class="stat-val" style="color:var(--nvt)">${entregas}</div><div class="stat-lbl">Entregas</div></div>
-    <div class="stat-card accent"><div class="stat-val" style="color:var(--ua-yel)">${trayectosCompletos}</div><div class="stat-lbl">Trayectos completos</div></div>
-    <div class="stat-card"><div class="stat-val g">${enTiempoCount}</div><div class="stat-lbl">En tiempo</div></div>
-    <div class="stat-card"><div class="stat-val g">${sinNov}</div><div class="stat-lbl">Sin novedades</div></div>
-    <div class="stat-card accent"><div class="stat-val" style="color:var(--warn)">${conNov}</div><div class="stat-lbl">Con novedades</div></div>
-    <div class="stat-card dark"><div class="stat-val" style="color:var(--nvt)">${conductores}</div><div class="stat-lbl">Conductores</div></div>`;
+    <div class="stat-card"><i class="ti ti-clipboard-list stat-card-icon" style="color:var(--ua-grn)"></i><div class="stat-val r">${total}</div><div class="stat-lbl">Total registros</div></div>
+    <div class="stat-card"><i class="ti ti-truck-loading stat-card-icon" style="color:var(--ua-grn)"></i><div class="stat-val r">${recepciones}</div><div class="stat-lbl">Recepciones</div></div>
+    <div class="stat-card dark"><i class="ti ti-circle-check stat-card-icon" style="color:var(--nvt)"></i><div class="stat-val" style="color:var(--nvt)">${entregas}</div><div class="stat-lbl">Entregas</div></div>
+    <div class="stat-card accent"><i class="ti ti-route stat-card-icon" style="color:var(--ua-yel)"></i><div class="stat-val" style="color:var(--ua-yel)">${trayectosCompletos}</div><div class="stat-lbl">Trayectos completos</div></div>
+    <div class="stat-card"><i class="ti ti-clock-check stat-card-icon" style="color:var(--grn)"></i><div class="stat-val g">${enTiempoCount}</div><div class="stat-lbl">En tiempo</div></div>
+    <div class="stat-card"><i class="ti ti-mood-smile stat-card-icon" style="color:var(--grn)"></i><div class="stat-val g">${sinNov}</div><div class="stat-lbl">Sin novedades</div></div>
+    <div class="stat-card accent"><i class="ti ti-alert-triangle stat-card-icon" style="color:var(--warn)"></i><div class="stat-val" style="color:var(--warn)">${conNov}</div><div class="stat-lbl">Con novedades</div></div>
+    <div class="stat-card dark"><i class="ti ti-users stat-card-icon" style="color:var(--nvt)"></i><div class="stat-val" style="color:var(--nvt)">${conductores}</div><div class="stat-lbl">Conductores</div></div>`;
+
+  renderConductores(recs);
+}
+
+// ── CONDUCTORES ÚNICOS ──────────────────────────────────────────────
+function renderConductores(recs){
+  const list=document.getElementById('conductores-list');
+  if(!list) return;
+
+  const map={};
+  recs.forEach(r=>{
+    const nombre=(r.conductor||'').trim();
+    if(!nombre) return;
+    if(!map[nombre]) map[nombre]={nombre, total:0, recepciones:0, entregas:0, ultimo:null};
+    map[nombre].total++;
+    if(r.mode==='recepcion') map[nombre].recepciones++;
+    if(r.mode==='entrega') map[nombre].entregas++;
+    if(!map[nombre].ultimo || new Date(r.timestamp)>new Date(map[nombre].ultimo)) map[nombre].ultimo=r.timestamp;
+  });
+
+  const conductoresArr=Object.values(map).sort((a,b)=>b.total-a.total);
+  const sub=document.getElementById('conductores-sub');
+  if(sub) sub.textContent=`${conductoresArr.length} conductor(es) con registros`;
+
+  if(!conductoresArr.length){
+    list.innerHTML=`<div class="empty-st"><div class="empty-st-icon"><i class="ti ti-user-off"></i></div>Aún no hay conductores registrados.</div>`;
+    return;
+  }
+
+  list.innerHTML=conductoresArr.map(c=>{
+    const initials=c.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const fecha=c.ultimo?new Date(c.ultimo).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    return `<div class="conductor-item">
+      <div class="conductor-avatar">${initials}</div>
+      <div class="conductor-info">
+        <div class="conductor-name">${c.nombre}</div>
+        <div class="conductor-meta">
+          <span><i class="ti ti-truck-loading" style="font-size:10px"></i> ${c.recepciones} recep.</span>
+          <span><i class="ti ti-circle-check" style="font-size:10px"></i> ${c.entregas} entr.</span>
+          <span><i class="ti ti-calendar" style="font-size:10px"></i> ${fecha}</span>
+        </div>
+      </div>
+      <div class="conductor-badge">${c.total} reg.</div>
+    </div>`;
+  }).join('');
 }
 
 // ── RECORDS ───────────────────────────────────────────────────────
