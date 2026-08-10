@@ -361,6 +361,42 @@
   .conductor-meta{font-size:11px;color:var(--text-muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;}
   .conductor-badge{background:var(--surface-1);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ua-grn);white-space:nowrap;flex-shrink:0;}
 
+  /* Tarjetas de conductor en el listado de registros (agrupadas) */
+  .cond-card{background:var(--surface-0);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:10px;}
+  .cond-card-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+  .cond-info{flex:1;min-width:0;}
+  .cond-name{font-size:14px;font-weight:700;color:var(--text-primary);}
+  .cond-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);margin-top:3px;}
+  .cond-vins{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .cond-vin-chip{background:var(--surface-1);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:10px;font-family:monospace;color:var(--text-secondary);}
+  .cond-vin-chip.more{color:var(--ua-grn-d);font-weight:700;}
+  .cond-side{text-align:center;flex-shrink:0;}
+  .cond-total{font-size:20px;font-weight:800;color:var(--ua-grn);line-height:1;}
+  .cond-total-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+  .cond-chev{font-size:18px;color:var(--text-muted);transition:transform .25s ease;flex-shrink:0;}
+  .cond-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;background:var(--surface-1);}
+  .cond-card-body.open{max-height:4000px;}
+  .cond-rec-row{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-top:1px solid var(--border);}
+  .cond-rec-main{flex:1;min-width:0;}
+  .cond-rec-vin{font-size:13px;font-weight:700;font-family:monospace;color:var(--text-primary);}
+  .cond-rec-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+  .cond-rec-concepto{font-size:16px;}
+  .btn-ver-fotos{display:inline-flex;align-items:center;gap:5px;background:var(--ua-grn-l);color:var(--ua-grn-d);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+  /* Modal visor de fotos */
+  .foto-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.2rem;backdrop-filter:blur(4px);}
+  .foto-modal{background:var(--surface-0);border-radius:16px;max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .foto-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+  .foto-modal-title{font-size:14px;font-weight:700;color:var(--text-primary);}
+  .foto-modal-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .foto-modal-close{background:var(--surface-1);border:none;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);}
+  .foto-modal-body{padding:16px;overflow-y:auto;}
+  .foto-modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .foto-modal-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+  .foto-modal-iframe{width:100%;height:320px;border:1px solid var(--border);border-radius:10px;}
+  .foto-modal-empty{text-align:center;padding:20px 10px;color:var(--text-muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .btn-drive-full{display:inline-flex;align-items:center;gap:6px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;text-decoration:none;margin-top:10px;}
+
   .trayectos-empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px;}
 
 
@@ -1314,7 +1350,7 @@ async function enviarSheets(reg,archivos){
       document.getElementById(`bar_${i}`).style.width='100%';
       document.getElementById(`st_${i}`).textContent='✓';
     }
-    return {ok:true};
+    return {ok:true, folderLink: result?.folderLink||null};
   }catch(e){return {ok:false,msg:e.message};}
 }
 
@@ -1364,6 +1400,11 @@ async function submitForm(){
   const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
   recs.unshift(reg); localStorage.setItem('nvt_recs',JSON.stringify(recs));
   const res=await enviarSheets(reg,files);
+  if(res.folderLink){
+    const savedRecs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+    const savedReg=savedRecs.find(x=>x.id===reg.id);
+    if(savedReg){ savedReg.folderLink=res.folderLink; localStorage.setItem('nvt_recs',JSON.stringify(savedRecs)); }
+  }
   await subirDocsEscaneados(vin,conductor,ts);
 
   btn.disabled=false;
@@ -1505,54 +1546,150 @@ function renderRecords(){
 
   const list=document.getElementById('records-list');
   const count=document.getElementById('rcount');
-  if(count)count.textContent=`${recs.length} registro(s)`;
 
   if(!recs.length){
+    if(count)count.textContent='0 registro(s)';
     list.innerHTML=`<div class="empty-st"><div class="empty-st-icon"><i class="ti ti-clipboard-x"></i></div>No hay registros con esos filtros.</div>`;
     return;
   }
 
-  list.innerHTML=recs.map(r=>{
-    const fecha=new Date(r.timestamp);
+  // Agrupar registros por conductor (nombre normalizado)
+  const grupos={};
+  recs.forEach(r=>{
+    const nombre=(r.conductor||'').trim();
+    const key=nombre.toLowerCase()||'—';
+    if(!grupos[key]) grupos[key]={nombre:nombre||'Sin nombre',registros:[]};
+    grupos[key].registros.push(r);
+  });
+
+  const gruposArr=Object.values(grupos).map(g=>{
+    g.registros.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+    const recepciones=g.registros.filter(r=>r.mode==='recepcion').length;
+    const entregas=g.registros.filter(r=>r.mode==='entrega').length;
+    const vins=[...new Set(g.registros.map(r=>r.vin).filter(Boolean))];
+    return {...g, recepciones, entregas, vins, ultimo:g.registros[0].timestamp};
+  }).sort((a,b)=>new Date(b.ultimo)-new Date(a.ultimo));
+
+  if(count)count.textContent=`${recs.length} registro(s) · ${gruposArr.length} conductor(es)`;
+
+  list.innerHTML=gruposArr.map((g,idx)=>{
+    const initials=g.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const fecha=new Date(g.ultimo);
     const fs=fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
-    const hs=fecha.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-    const isRec=r.mode==='recepcion';
-    const initials=(r.conductor||'??').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    const tag=isRec?`<span class="tag-r tag-rec"><i class="ti ti-truck-loading" style="font-size:10px"></i> Puerto</span>`:`<span class="tag-r tag-ent"><i class="ti ti-circle-check" style="font-size:10px"></i> Entrega</span>`;
-    const ci=r.concepto==='ok'?'✅':r.concepto==='nov'?'⚠️':'—';
-    const hc=r.hash?r.hash.substring(0,12).toUpperCase():null;
-    const ht=hc?`<span class="tag-r hash-tag">🔐 ${hc}...</span>`:'';
-    const st=r.sellado?`<span class="tag-r sync-tag sync-ok">☁️ sincronizado</span>`:`<span class="tag-r sync-tag sync-no">📴 local</span>`;
-    const novBadge=r.novedad?`<div class="nov-tag"><i class="ti ti-alert-triangle"></i><span><strong>${r.novedad_zona||'Novedad'}:</strong> ${r.novedad.substring(0,80)}${r.novedad.length>80?'...':''}</span></div>`:'';
-    return `<div class="rc">
-      <div class="rc-top">
-        <div class="rc-avatar" style="background:${isRec?'var(--ua-grn-l)':'#f3f3f3'};color:${isRec?'var(--ua-grn-d)':'var(--nvt)'}">${initials}</div>
-        <div class="rc-main">
-          <div class="rc-vin">${r.vin}</div>
-          <div class="rc-conductor"><i class="ti ti-user" style="font-size:12px"></i> ${r.conductor||'—'}</div>
-          <div class="rc-meta" style="margin-top:4px">
-            <span class="rc-meta-item"><i class="ti ti-map-pin" style="font-size:11px"></i>${r.ciudad||'—'}</span>
-            <span class="rc-meta-item"><i class="ti ti-truck" style="font-size:11px"></i>${r.marca||''} ${r.modelo||''}</span>
-            ${r.placa?`<span class="rc-meta-item" style="font-weight:700;color:var(--nvt);background:#f3f3f3;border-radius:4px;padding:1px 6px;font-family:monospace"><i class="ti ti-credit-card" style="font-size:10px"></i> ${r.placa}</span>`:''}
-            <span class="rc-meta-item"><i class="ti ti-calendar" style="font-size:11px"></i>${fs} ${hs}</span>
-            ${r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--ua-grn-d);font-size:12px;font-weight:600;text-decoration:none;background:var(--ua-grn-l);border-radius:6px;padding:3px 9px;" title="Ver en Google Maps"><i class='ti ti-map-pin' style='font-size:11px'></i>Ver ubicación ↗</a>`:''}
+    const VMAX=4;
+    const vinChips=g.vins.slice(0,VMAX).map(v=>`<span class="cond-vin-chip">${v}</span>`).join('')
+      +(g.vins.length>VMAX?`<span class="cond-vin-chip more">+${g.vins.length-VMAX} más</span>`:'');
+    const filas=g.registros.map(buildCondRecRow).join('');
+
+    return `<div class="cond-card">
+      <div class="cond-card-hd" onclick="toggleCond(${idx})">
+        <div class="rc-avatar" style="background:var(--ua-grn-l);color:var(--ua-grn-d)">${initials}</div>
+        <div class="cond-info">
+          <div class="cond-name">${g.nombre}</div>
+          <div class="cond-meta">
+            <span><i class="ti ti-truck-loading" style="font-size:11px"></i> ${g.recepciones} recep.</span>
+            <span><i class="ti ti-circle-check" style="font-size:11px"></i> ${g.entregas} entr.</span>
+            <span><i class="ti ti-calendar" style="font-size:11px"></i> ${fs}</span>
           </div>
-          <div class="rc-tags">${tag}${ht}${st}</div>
-          ${r.folderLink?`<a href="${r.folderLink}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--ua-grn-l);color:var(--ua-grn-d);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;text-decoration:none;margin-top:4px;"><i class='ti ti-brand-google-drive' style='font-size:13px'></i>Ver fotos en Drive ↗</a>`:''}
-          ${novBadge}
+          <div class="cond-vins">${vinChips}</div>
         </div>
-        <div class="rc-side">
-          <div class="rc-concepto">${ci}</div>
-          <div class="rc-fotos">${r.fotos} foto(s)</div>
-          <div class="rc-fotos">${r.accesorios?.length||0} accs.</div>
+        <div class="cond-side">
+          <div class="cond-total">${g.registros.length}</div>
+          <div class="cond-total-lbl">registros</div>
         </div>
+        <i class="ti ti-chevron-down cond-chev" id="cond-chev-${idx}"></i>
       </div>
-      <div class="rc-footer">
-        <div class="rc-ph"><div class="dot dot-ok"></div>${isRec?'Recepción registrada':'Entrega registrada'}</div>
-        <div class="rc-ph"><div class="dot ${r.concepto==='ok'?'dot-ok':r.concepto==='nov'?'dot-warn':'dot-pend'}"></div>${r.concepto==='ok'?'Sin novedades':r.concepto==='nov'?'Con novedades ⚠️':'Concepto pendiente'}</div>
-      </div>
+      <div class="cond-card-body" id="cond-body-${idx}">${filas}</div>
     </div>`;
   }).join('');
+}
+
+function buildCondRecRow(r){
+  const fecha=new Date(r.timestamp);
+  const fs=fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
+  const hs=fecha.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const isRec=r.mode==='recepcion';
+  const tag=isRec?`<span class="tag-r tag-rec"><i class="ti ti-truck-loading" style="font-size:10px"></i> Puerto</span>`:`<span class="tag-r tag-ent"><i class="ti ti-circle-check" style="font-size:10px"></i> Entrega</span>`;
+  const ci=r.concepto==='ok'?'✅':r.concepto==='nov'?'⚠️':'—';
+  const hc=r.hash?r.hash.substring(0,12).toUpperCase():null;
+  const ht=hc?`<span class="tag-r hash-tag">🔐 ${hc}...</span>`:'';
+  const st=r.sellado?`<span class="tag-r sync-tag sync-ok">☁️ sincronizado</span>`:`<span class="tag-r sync-tag sync-no">📴 local</span>`;
+  const novBadge=r.novedad?`<div class="nov-tag"><i class="ti ti-alert-triangle"></i><span><strong>${r.novedad_zona||'Novedad'}:</strong> ${r.novedad.substring(0,80)}${r.novedad.length>80?'...':''}</span></div>`:'';
+  return `<div class="cond-rec-row">
+    <div class="cond-rec-main">
+      <div class="cond-rec-vin">${r.vin||'—'}</div>
+      <div class="rc-meta" style="margin-top:4px">
+        <span class="rc-meta-item"><i class="ti ti-map-pin" style="font-size:11px"></i>${r.ciudad||'—'}</span>
+        <span class="rc-meta-item"><i class="ti ti-truck" style="font-size:11px"></i>${r.marca||''} ${r.modelo||''}</span>
+        ${r.placa?`<span class="rc-meta-item" style="font-weight:700;color:var(--nvt);background:#f3f3f3;border-radius:4px;padding:1px 6px;font-family:monospace"><i class="ti ti-credit-card" style="font-size:10px"></i> ${r.placa}</span>`:''}
+        <span class="rc-meta-item"><i class="ti ti-calendar" style="font-size:11px"></i>${fs} ${hs}</span>
+        ${r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--ua-grn-d);font-size:12px;font-weight:600;text-decoration:none;background:var(--ua-grn-l);border-radius:6px;padding:3px 9px;" title="Ver en Google Maps"><i class='ti ti-map-pin' style='font-size:11px'></i>Ver ubicación ↗</a>`:''}
+      </div>
+      <div class="rc-tags">${tag}${ht}${st}</div>
+      ${novBadge}
+    </div>
+    <div class="cond-rec-side">
+      <div class="cond-rec-concepto">${ci}</div>
+      <div class="rc-fotos">${r.fotos||0} foto(s)</div>
+      <button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})"><i class="ti ti-camera"></i> Ver fotos</button>
+    </div>
+  </div>`;
+}
+
+function toggleCond(idx){
+  const body=document.getElementById(`cond-body-${idx}`);
+  const chev=document.getElementById(`cond-chev-${idx}`);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
+// ── VISOR DE FOTOS ────────────────────────────────────────────────
+function openFotosModal(recId){
+  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  const r=recs.find(x=>x.id===recId);
+  if(!r) return;
+
+  closeFotosModal();
+
+  let folderId=null;
+  if(r.folderLink){
+    const m=r.folderLink.match(/[-\w]{25,}/);
+    if(m) folderId=m[0];
+  }
+
+  let body;
+  if(r.fotosData && r.fotosData.length){
+    body=`<div class="foto-modal-grid">${r.fotosData.map(f=>`<a href="${f.dataUrl}" target="_blank"><img src="${f.dataUrl}" alt="${f.name||''}"></a>`).join('')}</div>`;
+  } else if(folderId){
+    body=`<iframe src="https://drive.google.com/embeddedfolderview?id=${folderId}#grid" class="foto-modal-iframe"></iframe>
+      <a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Abrir carpeta en Drive ↗</a>`;
+  } else if(r.folderLink){
+    body=`<div class="foto-modal-empty"><i class="ti ti-brand-google-drive" style="font-size:32px;color:var(--ua-grn)"></i><p>Las fotos de este registro están guardadas en Google Drive.</p>
+      <a href="${r.folderLink}" target="_blank" class="btn-drive-full"><i class="ti ti-brand-google-drive"></i> Abrir carpeta en Drive ↗</a></div>`;
+  } else {
+    body=`<div class="foto-modal-empty"><i class="ti ti-camera" style="font-size:32px;color:var(--text-muted)"></i><p>No hay fotos disponibles todavía para este registro. Puede que aún no se haya sincronizado la carpeta de Drive.</p></div>`;
+  }
+
+  const ov=document.createElement('div');
+  ov.id='fotos-modal-ov';
+  ov.className='foto-modal-overlay';
+  ov.onclick=(e)=>{if(e.target===ov) closeFotosModal();};
+  ov.innerHTML=`<div class="foto-modal">
+    <div class="foto-modal-hd">
+      <div>
+        <div class="foto-modal-title">Fotos — ${r.vin||'—'}</div>
+        <div class="foto-modal-sub">${r.conductor||''} · ${r.mode==='recepcion'?'Recepción':'Entrega'}</div>
+      </div>
+      <button class="foto-modal-close" onclick="closeFotosModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="foto-modal-body">${body}</div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+function closeFotosModal(){
+  document.getElementById('fotos-modal-ov')?.remove();
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────
