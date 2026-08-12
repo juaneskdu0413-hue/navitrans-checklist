@@ -1356,16 +1356,36 @@ function fetchConTimeout(url,opciones,ms=15000){
   return fetch(url,{...opciones,signal:ctrl.signal}).finally(()=>clearTimeout(timer));
 }
 
+function enviarConXHR(url,body){
+  return new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+    xhr.timeout=20000;
+    xhr.onload=function(){
+      resolve({ok:true,text:xhr.responseText});
+    };
+    xhr.onerror=function(){
+      reject(new Error('XHR error'));
+    };
+    xhr.ontimeout=function(){
+      reject(new Error('XHR timeout'));
+    };
+    xhr.send(body);
+  });
+}
+
 async function enviarSheets(reg,archivos){
   if(!SHEETS_URL) return {ok:false};
 
   async function intentarEnvio(){
-    const resp=await fetchConTimeout(SHEETS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({accion:'checklist',datos:reg})},15000);
     let result=null;
     try{
-      const txt=await resp.text();
-      result=JSON.parse(txt);
-    }catch(e){result=null;}
+      const xhrRes=await enviarConXHR(SHEETS_URL,JSON.stringify({accion:'checklist',datos:reg}));
+      result=JSON.parse(xhrRes.text);
+    }catch(e){
+      result=null;
+    }
     const validos=archivos.filter(f=>f);
     const ul=document.getElementById('upload-list');
     for(let i=0;i<validos.length;i++){
@@ -1374,7 +1394,7 @@ async function enviarSheets(reg,archivos){
       const itemId=`up_${i}`;
       ul.innerHTML+=`<div class="upload-item" id="${itemId}"><i class="ti ti-file" style="color:var(--text-muted)"></i><span style="flex:1;color:var(--text-secondary)">${f.name.substring(0,25)}</span><div class="upload-bar-wrap"><div class="upload-bar" id="bar_${i}" style="width:0%"></div></div><span style="font-size:11px;color:var(--text-muted);width:30px;text-align:right" id="st_${i}">...</span></div>`;
       document.getElementById(`bar_${i}`).style.width='30%';
-      await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({accion:'archivo',vin:reg.vin,conductor:reg.conductor,timestamp:reg.timestamp,nombre:f.name,tipo:f.type,datos:b64})});
+      await enviarConXHR(SHEETS_URL,JSON.stringify({accion:'archivo',vin:reg.vin,conductor:reg.conductor,timestamp:reg.timestamp,nombre:f.name,tipo:f.type,datos:b64}));
       document.getElementById(`bar_${i}`).style.width='100%';
       document.getElementById(`st_${i}`).textContent='✓';
     }
