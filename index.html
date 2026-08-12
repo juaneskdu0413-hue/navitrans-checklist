@@ -774,7 +774,7 @@
     <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout"></i> Salir</button>
   </div>
   <div class="rbody">
-    <div id="admin-loading" style="display:none;text-align:center;padding:20px;color:#888;font-size:13px;">⏳ Cargando registros desde el servidor...</div>
+    <div id="admin-loading" style="display:none;text-align:center;padding:24px;color:#888;font-size:13px;"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite;margin-right:6px;"></i>Cargando registros desde el servidor...</div>
     <div class="stats-grid" id="admin-stats"></div>
     <div class="admin-toolbar">
       <select class="filter-sel" id="f-mode" onchange="renderRecords()">
@@ -1743,7 +1743,7 @@ async function cargarRegistrosAdmin(){
       localStorage.setItem('nvt_recs_cache', JSON.stringify(data.registros));
       return data.registros;
     }else{
-      return JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+      return JSON.parse(localStorage.getItem('nvt_recs_cache') || localStorage.getItem('nvt_recs') || '[]');
     }
   }catch(e){
     const cache=localStorage.getItem('nvt_recs_cache') || localStorage.getItem('nvt_recs') || '[]';
