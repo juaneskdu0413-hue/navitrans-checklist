@@ -1256,6 +1256,7 @@ function renderVehiculosPendientes(vehiculos){
       document.getElementById('f-chasis').value=v.chasis||'';
       document.getElementById('f-km').value=v.km||'';
       updateProgress();
+      document.getElementById('vehiculos-pendientes').innerHTML='';
     };
     card.setAttribute('data-vin', v.vin);
     contenedor.appendChild(card);
