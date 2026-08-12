@@ -127,6 +127,7 @@
   .field textarea{resize:vertical;min-height:80px;}
   .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .vin-inp{font-size:20px!important;font-weight:800!important;letter-spacing:3px!important;text-transform:uppercase!important;color:var(--ua-grn)!important;font-family:monospace!important;}
+  .vin-inp[readonly]{background:#f3f4f6!important;cursor:not-allowed;}
 
   /* gps */
   .gps-pill{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:500;}
@@ -527,6 +528,10 @@
           <input type="text" id="f-conductor" class="cs-input" placeholder="Escribe tu nombre completo" oninput="updateProgress()">
         </div>
       </div>
+      <div id="buscar-conductor-wrap" style="display:none;padding:0 14px 12px;">
+        <button type="button" id="btn-buscar-conductor" onclick="buscarVehiculosConductor()" style="width:100%;margin-top:8px;padding:12px;background:#3aaa35;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">🔍 Buscar mis vehículos pendientes</button>
+        <div id="vehiculos-pendientes" style="margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 
@@ -542,7 +547,7 @@
         </div>
         <div class="fg">
           <div class="field"><label>Pedido de Importación</label><input type="text" id="f-orden" placeholder="Nro. pedido" oninput="updateProgress()"></div>
-          <div class="field"><label>Ciudad de Origen</label><input type="text" id="f-ciudad" placeholder="Ciudad de origen" oninput="updateProgress()"></div>
+          <div class="field"><label id="lbl-ciudad">Ciudad de Origen</label><input type="text" id="f-ciudad" placeholder="Ciudad de origen" oninput="updateProgress()"></div>
         </div>
         <div class="fg">
           <div class="field"><label>Número de Placa</label><input type="text" id="f-placa" placeholder="Ej: ABC-123" style="text-transform:uppercase;font-weight:700;font-size:16px;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()"></div>
@@ -1112,6 +1117,7 @@ function startForm(m){
   document.getElementById('ph-badge').style.display='none';
   document.getElementById('f-conductor').value='';
   document.getElementById('f-vin').value='';
+  document.getElementById('vehiculos-pendientes').innerHTML='';
   scanDocs={};
   initDocScanner();
   vinBuscado='';
@@ -1123,6 +1129,9 @@ function startForm(m){
   document.getElementById('fhdr-sub').textContent=isRec?'Origen · Registro inicial':'Destino · Concesionario';
   document.getElementById('mpill').textContent=isRec?'Origen':'Entrega';
   document.getElementById('s-lavado').style.display=isRec?'none':'block';
+  document.getElementById('lbl-ciudad').textContent=isRec?'Ciudad de Origen':'Ciudad de Destino';
+  document.getElementById('f-vin').readOnly=!isRec;
+  document.getElementById('buscar-conductor-wrap').style.display=isRec?'none':'block';
   document.getElementById('sn-conc').textContent=isRec?'9':'10';
   document.getElementById('sn-firma').textContent=isRec?'10':'11';
   document.getElementById('btn-sub').className=isRec?'btn-submit r':'btn-submit g';
@@ -1194,6 +1203,90 @@ function mostrarBuscando(vin){
 function quitarBanner(){
   const b=document.getElementById('autocomplete-banner');
   if(b) b.remove();
+}
+
+// ── BÚSQUEDA DE VEHÍCULOS PENDIENTES POR CONDUCTOR (ENTREGA) ──────
+function buscarVehiculosLocal(conductor){
+  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  const norm=conductor.trim().toLowerCase().replace(/\s+/g,' ');
+  const recepciones=recs.filter(r=>r.mode==='recepcion' && (r.conductor||'').trim().toLowerCase().replace(/\s+/g,' ')===norm);
+  const vinsConEntrega=new Set(recs.filter(r=>r.mode==='entrega').map(r=>r.vin));
+  return recepciones
+    .filter(r=>r.vin && !vinsConEntrega.has(r.vin))
+    .map(r=>({vin:r.vin,ciudad:r.ciudad,marca:r.marca,modelo:r.modelo,timestamp:r.timestamp,orden:r.orden,placa:r.placa,tipo:r.tipo,motor:r.motor,chasis:r.chasis,km:r.km}));
+}
+
+function renderVehiculosPendientes(vehiculos){
+  const contenedor=document.getElementById('vehiculos-pendientes');
+  contenedor.innerHTML='';
+
+  if(!vehiculos || vehiculos.length===0){
+    contenedor.innerHTML='<div style="padding:12px;color:#888;font-size:13px;text-align:center;">No se encontraron vehículos pendientes para este conductor.</div>';
+    return;
+  }
+
+  vehiculos.forEach(v=>{
+    const card=document.createElement('div');
+    card.style.cssText='border:2px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;background:#fff;';
+    card.innerHTML=`
+      <div style="font-family:monospace;font-size:14px;font-weight:800;color:#1b5e20;margin-bottom:4px;">${v.vin}</div>
+      <div style="font-size:12px;color:#555;">${v.marca||''} ${v.modelo||''} · ${v.ciudad||''}</div>
+      <div style="font-size:11px;color:#999;margin-top:2px;">Recibido: ${v.timestamp?new Date(v.timestamp).toLocaleDateString('es-CO'):'—'}</div>
+    `;
+    card.onclick=()=>{
+      contenedor.querySelectorAll('div[data-vin]').forEach(c=>{
+        c.style.border='2px solid #e5e7eb';
+        c.style.background='#fff';
+      });
+      card.style.border='2px solid #3aaa35';
+      card.style.background='#f0faf0';
+      document.getElementById('f-vin').value=v.vin||'';
+      document.getElementById('f-orden').value=v.orden||'';
+      document.getElementById('f-ciudad').value=v.ciudad||'';
+      document.getElementById('f-placa').value=v.placa||'';
+      document.getElementById('f-tipo').value=v.tipo||'';
+      document.getElementById('f-marca').value=v.marca||'';
+      document.getElementById('f-modelo').value=v.modelo||'';
+      document.getElementById('f-motor').value=v.motor||'';
+      document.getElementById('f-chasis').value=v.chasis||'';
+      document.getElementById('f-km').value=v.km||'';
+      updateProgress();
+    };
+    card.setAttribute('data-vin', v.vin);
+    contenedor.appendChild(card);
+  });
+}
+
+async function buscarVehiculosConductor(){
+  const conductor=document.getElementById('f-conductor').value.trim();
+  if(!conductor){ alert('Primero escribe tu nombre.'); return; }
+
+  const btn=document.getElementById('btn-buscar-conductor');
+  btn.disabled=true;
+  btn.innerHTML='⏳ Buscando...';
+
+  let vehiculos=null;
+  try{
+    const url=SHEETS_URL+'?conductor='+encodeURIComponent(conductor);
+    const resp=await fetch(url);
+    const txt=await resp.text();
+    const data=JSON.parse(txt);
+    if(data.ok && Array.isArray(data.vehiculos) && data.vehiculos.length>0){
+      vehiculos=data.vehiculos;
+    }
+  }catch(e){
+    vehiculos=null;
+  }
+
+  // El servidor puede no soportar aún ?conductor=, o puede no haber conexión:
+  // en ambos casos, hacemos fallback a la búsqueda local en este dispositivo.
+  if(!vehiculos){
+    vehiculos=buscarVehiculosLocal(conductor);
+  }
+
+  renderVehiculosPendientes(vehiculos);
+  btn.disabled=false;
+  btn.innerHTML='🔍 Buscar mis vehículos pendientes';
 }
 
 function aplicarAutocompletado(rec, vin, fuente){
