@@ -1133,6 +1133,7 @@ function startForm(m){
   document.getElementById('f-ciudad').placeholder=isRec?'Ciudad de origen':'Ej: Bogotá, Medellín...';
   document.getElementById('f-vin').readOnly=!isRec;
   document.getElementById('buscar-conductor-wrap').style.display=isRec?'none':'block';
+  document.getElementById('btn-buscar-conductor').style.display='';
   if(isRec){
     if(!document.getElementById('f-marca').value) document.getElementById('f-marca').value='Foton';
     if(!document.getElementById('f-modelo').value) document.getElementById('f-modelo').value='2027';
@@ -1257,6 +1258,7 @@ function renderVehiculosPendientes(vehiculos){
       document.getElementById('f-km').value=v.km||'';
       updateProgress();
       document.getElementById('vehiculos-pendientes').innerHTML='';
+      document.getElementById('btn-buscar-conductor').style.display='none';
     };
     card.setAttribute('data-vin', v.vin);
     contenedor.appendChild(card);
