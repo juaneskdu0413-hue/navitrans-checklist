@@ -1130,6 +1130,7 @@ function startForm(m){
   document.getElementById('mpill').textContent=isRec?'Origen':'Entrega';
   document.getElementById('s-lavado').style.display=isRec?'none':'block';
   document.getElementById('lbl-ciudad').textContent=isRec?'Ciudad de Origen':'Ciudad de Destino';
+  document.getElementById('f-ciudad').placeholder=isRec?'Ciudad de origen':'Ej: Bogotá, Medellín...';
   document.getElementById('f-vin').readOnly=!isRec;
   document.getElementById('buscar-conductor-wrap').style.display=isRec?'none':'block';
   if(isRec){
