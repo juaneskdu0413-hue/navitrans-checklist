@@ -774,6 +774,7 @@
     <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout"></i> Salir</button>
   </div>
   <div class="rbody">
+    <div id="admin-loading" style="display:none;text-align:center;padding:20px;color:#888;font-size:13px;">⏳ Cargando registros desde el servidor...</div>
     <div class="stats-grid" id="admin-stats"></div>
     <div class="admin-toolbar">
       <select class="filter-sel" id="f-mode" onchange="renderRecords()">
@@ -793,7 +794,7 @@
     <div class="tiempo-config">
       <i class="ti ti-clock-hour-4" style="font-size:18px;color:var(--bav)"></i>
       <label>Tiempo máximo de entrega</label>
-      <input type="number" id="max-horas" min="1" max="240" value="48" onchange="saveCfg();renderTrayectos();renderStats(JSON.parse(localStorage.getItem('nvt_recs')||'[]'))">
+      <input type="number" id="max-horas" min="1" max="240" value="48" onchange="saveCfg();renderTrayectos();renderStats(adminRecsCache)">
       <span style="font-size:13px;color:var(--text-muted)">horas</span>
       <div class="tc-info">🟢 Verde = hasta 80% · 🟡 Amarillo = hasta 100% · 🔴 Rojo = pasado</div>
     </div>
@@ -1721,13 +1722,46 @@ function renderConductores(recs){
 }
 
 // ── RECORDS ───────────────────────────────────────────────────────
-function showRecords(){
+// ── CARGA DE REGISTROS: Google Sheets primero, localStorage como fallback ──
+// NOTA para el Apps Script (servidor, archivo separado — no vive en este index.html):
+// doGet(e) necesita agregar: if (e.parameter.accion === 'todos') return getTodosLosRegistros();
+// y una función getTodosLosRegistros() que lea las hojas Recepciones y Entregas,
+// devolviendo {ok:true, registros:[...]} con cada registro incluyendo su campo "mode".
+let adminRecsCache=[];
+
+async function cargarRegistrosAdmin(){
+  const loading=document.getElementById('admin-loading');
+  if(loading) loading.style.display='block';
+
+  try{
+    const url=SHEETS_URL+'?accion=todos';
+    const resp=await fetch(url);
+    const txt=await resp.text();
+    const data=JSON.parse(txt);
+
+    if(data.ok && data.registros && data.registros.length>0){
+      localStorage.setItem('nvt_recs_cache', JSON.stringify(data.registros));
+      return data.registros;
+    }else{
+      return JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+    }
+  }catch(e){
+    const cache=localStorage.getItem('nvt_recs_cache') || localStorage.getItem('nvt_recs') || '[]';
+    return JSON.parse(cache);
+  }finally{
+    if(loading) loading.style.display='none';
+  }
+}
+
+async function showRecords(){
   if(!checkAuth()){showLogin();return;}
-  loadCfg(); renderTrayectos(); renderRecords(); showScreen('sr');
+  loadCfg();
+  adminRecsCache=await cargarRegistrosAdmin();
+  renderTrayectos(); renderRecords(); showScreen('sr');
 }
 
 function renderRecords(){
-  let recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  let recs=adminRecsCache;
   renderStats(recs);
   const modeF=document.getElementById('f-mode')?.value||'';
   const concF=document.getElementById('f-concepto')?.value||'';
@@ -1887,7 +1921,7 @@ function formatDuracion(ms){
 
 // ── TRAYECTOS ─────────────────────────────────────────────────────
 function renderTrayectos(){
-  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  const recs=adminRecsCache;
   const maxH=loadCfg();
   const list=document.getElementById('trayectos-list');
   const eficGrid=document.getElementById('eficiencia-grid');
@@ -2014,7 +2048,7 @@ function renderTrayectos(){
 }
 
 function exportCSV(){
-  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
+  const recs=adminRecsCache;
   if(!recs.length){alert('No hay registros para exportar.');return;}
 
   // Cargar SheetJS dinámicamente
