@@ -550,14 +550,14 @@
           <div class="field"><label id="lbl-ciudad">Ciudad de Origen</label><input type="text" id="f-ciudad" placeholder="Ciudad de origen" oninput="updateProgress()"></div>
         </div>
         <div class="fg">
-          <div class="field"><label>Número de Placa</label><input type="text" id="f-placa" placeholder="Ej: ABC-123" style="text-transform:uppercase;font-weight:700;font-size:16px;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="field"><label>Número de Placa</label><input type="text" id="f-placa" placeholder="EJ: ABC-123 (si aplica)" style="text-transform:uppercase;font-weight:700;font-size:16px;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()"></div>
         </div>
         <div class="fg">
           <div class="field"><label>Tipo de Unidad</label><input type="text" id="f-tipo" placeholder="Tractocamión..."></div>
-          <div class="field"><label>Marca</label><input type="text" id="f-marca" placeholder="Kenworth..."></div>
+          <div class="field"><label>Marca</label><input type="text" id="f-marca" placeholder="Foton"></div>
         </div>
         <div class="fg">
-          <div class="field"><label>Modelo / Año</label><input type="text" id="f-modelo" placeholder="2024"></div>
+          <div class="field"><label>Modelo / Año</label><input type="text" id="f-modelo" placeholder="2027"></div>
           <div class="field"><label>Motor No.</label><input type="text" id="f-motor" placeholder="Nro. motor"></div>
         </div>
         <div class="fg">
@@ -1132,6 +1132,10 @@ function startForm(m){
   document.getElementById('lbl-ciudad').textContent=isRec?'Ciudad de Origen':'Ciudad de Destino';
   document.getElementById('f-vin').readOnly=!isRec;
   document.getElementById('buscar-conductor-wrap').style.display=isRec?'none':'block';
+  if(isRec){
+    if(!document.getElementById('f-marca').value) document.getElementById('f-marca').value='Foton';
+    if(!document.getElementById('f-modelo').value) document.getElementById('f-modelo').value='2027';
+  }
   document.getElementById('sn-conc').textContent=isRec?'9':'10';
   document.getElementById('sn-firma').textContent=isRec?'10':'11';
   document.getElementById('btn-sub').className=isRec?'btn-submit r':'btn-submit g';
