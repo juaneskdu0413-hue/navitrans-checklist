@@ -1895,6 +1895,7 @@ function buildCondRecRow(r){
     <div class="cond-rec-info">${r.ciudad||'—'} · ${fs}</div>
     <span class="cond-rec-concepto-badge ${concepto.cls}">${concepto.txt}</span>
     ${fotosBtn}
+    <button onclick="event.stopPropagation();verDetalleRegistro('${r.id}')" style="background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;">📋 Ver detalle</button>
     ${pin}
   </div>`;
 }
@@ -1941,6 +1942,62 @@ function openFotosModal(recId){
 
 function closeFotosModal(){
   document.getElementById('fotos-modal-ov')?.remove();
+}
+
+// ── DETALLE COMPLETO DE REGISTRO ───────────────────────────────────
+function verDetalleRegistro(id){
+  const rec=adminRecsCache.find(r=>r.id==id);
+  if(!rec){ alert('Registro no encontrado'); return; }
+
+  const modo=rec.mode==='recepcion'?'📥 RECEPCIÓN · ORIGEN':'📤 ENTREGA · DESTINO';
+  const fecha=rec.timestamp?new Date(rec.timestamp).toLocaleString('es-CO'):'—';
+  const concepto=rec.concepto==='ok'?'<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">✅ Sin novedades</span>':rec.concepto==='nov'?'<span style="background:#fdecea;color:#c62828;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">⚠️ Con novedades</span>':'<span style="background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">⏳ Pendiente</span>';
+
+  const fila=(label,valor)=>valor?`<tr><td style="padding:8px 12px;font-size:12px;font-weight:700;color:#888;white-space:nowrap;width:140px;">${label}</td><td style="padding:8px 12px;font-size:13px;color:#1a1a1a;">${valor}</td></tr>`:'';
+
+  document.getElementById('modal-detalle-titulo').innerHTML=`${rec.conductor} · ${rec.vin||'—'}`;
+  document.getElementById('modal-detalle-body').innerHTML=`
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="background:#f0faf0;color:#1b5e20;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">${modo}</span>
+      ${concepto}
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Información General</div>
+    <table style="width:100%;border-collapse:collapse;background:#f8f9fb;border-radius:10px;overflow:hidden;margin-bottom:16px;">
+      ${fila('Conductor', rec.conductor)}
+      ${fila('VIN', `<span style="font-family:monospace;font-weight:800;color:#1b5e20;">${rec.vin}</span>`)}
+      ${fila('Fecha y Hora', fecha)}
+      ${fila('Ciudad Origen', rec.ciudad)}
+      ${fila('Ciudad Destino', rec.ciudad_destino)}
+      ${fila('Placa', rec.placa)}
+      ${fila('Tipo Unidad', rec.tipo)}
+      ${fila('Marca', rec.marca)}
+      ${fila('Modelo', rec.modelo)}
+      ${fila('Motor No.', rec.motor)}
+      ${fila('Chasis No.', rec.chasis)}
+      ${fila('Kilometraje', rec.km)}
+      ${fila('Pedido Importación', rec.orden)}
+    </table>
+
+    ${rec.novedad?`
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Novedades</div>
+    <div style="background:#fdecea;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;color:#c62828;font-weight:600;">⚠️ ${rec.novedad}</div>
+      ${rec.novedad_zona?`<div style="font-size:12px;color:#888;margin-top:4px;">Zona: ${rec.novedad_zona}</div>`:''}
+    </div>`:''}
+
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Otros Datos</div>
+    <table style="width:100%;border-collapse:collapse;background:#f8f9fb;border-radius:10px;overflow:hidden;margin-bottom:16px;">
+      ${fila('GPS', rec.lat && rec.lng?`<a href="https://www.google.com/maps?q=${rec.lat},${rec.lng}" target="_blank" style="color:#3aaa35;font-weight:600;">📍 Ver en Maps</a>`:'—')}
+      ${fila('Fotos', rec.fotos?`${rec.fotos} foto(s)`:'0')}
+      ${fila('Lavado', rec.lavado?'✅ Sí':'—')}
+      ${fila('Hash SHA-256', rec.hash?`<span style="font-family:monospace;font-size:11px;">${rec.hash.substring(0,20)}...</span>`:'—')}
+      ${fila('Sellado', rec.sellado?'✅ Sí':'No')}
+      ${fila('Carpeta Drive', rec.folderLink?`<a href="${rec.folderLink}" target="_blank" style="color:#3aaa35;font-weight:600;">📁 Ver fotos en Drive</a>`:'—')}
+    </table>
+  `;
+
+  document.getElementById('modal-detalle').style.display='block';
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────
@@ -2225,5 +2282,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>{initCv('cv-ent');initCv('cv-rec');},100);
 });
 </script>
+<div id="modal-detalle" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:9999;overflow-y:auto;padding:20px;">
+  <div style="background:#fff;border-radius:16px;max-width:640px;margin:0 auto;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#1a1a1a,#1b5e20);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="color:#3aaa35;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Detalle del Registro</div>
+        <div id="modal-detalle-titulo" style="color:#fff;font-size:16px;font-weight:800;margin-top:2px;"></div>
+      </div>
+      <button onclick="document.getElementById('modal-detalle').style.display='none'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+    <div id="modal-detalle-body" style="padding:20px 24px;"></div>
+  </div>
+</div>
 </body>
 </html>
