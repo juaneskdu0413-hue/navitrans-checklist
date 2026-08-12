@@ -1487,6 +1487,19 @@ function enviarConXHR(url,bodyStr){
   });
 }
 
+async function subirFotoConReintento(payload,maxIntentos=3,pausaMs=2000,onIntento){
+  for(let intento=1; intento<=maxIntentos; intento++){
+    try{
+      await enviarConXHR(SHEETS_URL, JSON.stringify(payload));
+      return true;
+    }catch(e){
+      if(onIntento) onIntento(intento);
+      if(intento<maxIntentos) await new Promise(r=>setTimeout(r,pausaMs));
+    }
+  }
+  return false;
+}
+
 async function enviarSheets(reg,archivos){
   if(!SHEETS_URL) return {ok:false};
 
@@ -1500,15 +1513,34 @@ async function enviarSheets(reg,archivos){
     }
     const validos=archivos.filter(f=>f);
     const ul=document.getElementById('upload-list');
+    const fotosPendientes=[];
     for(let i=0;i<validos.length;i++){
       const f=validos[i];
       const b64=await toBase64(f);
       const itemId=`up_${i}`;
       ul.innerHTML+=`<div class="upload-item" id="${itemId}"><i class="ti ti-file" style="color:var(--text-muted)"></i><span style="flex:1;color:var(--text-secondary)">${f.name.substring(0,25)}</span><div class="upload-bar-wrap"><div class="upload-bar" id="bar_${i}" style="width:0%"></div></div><span style="font-size:11px;color:var(--text-muted);width:30px;text-align:right" id="st_${i}">...</span></div>`;
-      document.getElementById(`bar_${i}`).style.width='30%';
-      await enviarConXHR(SHEETS_URL,JSON.stringify({accion:'archivo',vin:reg.vin,conductor:reg.conductor,timestamp:reg.timestamp,nombre:f.name,tipo:f.type,datos:b64}));
-      document.getElementById(`bar_${i}`).style.width='100%';
-      document.getElementById(`st_${i}`).textContent='✓';
+      const bar=document.getElementById(`bar_${i}`);
+      const st=document.getElementById(`st_${i}`);
+      bar.style.width='30%';
+      const payload={accion:'archivo',vin:reg.vin,conductor:reg.conductor,timestamp:reg.timestamp,nombre:f.name,tipo:f.type,datos:b64};
+      const exito=await subirFotoConReintento(payload,3,2000,(intento)=>{bar.style.width=Math.min(30+intento*20,90)+'%';});
+      bar.style.width='100%';
+      if(exito){
+        bar.style.background='var(--grn)';
+        st.textContent='✓';
+        st.style.color='var(--grn)';
+      }else{
+        bar.style.background='#d97706';
+        st.textContent='⚠';
+        st.style.color='#d97706';
+        fotosPendientes.push({vin:reg.vin,conductor:reg.conductor,timestamp:reg.timestamp,nombre:f.name,tipo:f.type,datos_b64:b64});
+      }
+    }
+    if(fotosPendientes.length>0){
+      try{
+        const existentes=JSON.parse(localStorage.getItem('nvt_fotos_pendientes')||'[]');
+        localStorage.setItem('nvt_fotos_pendientes', JSON.stringify(existentes.concat(fotosPendientes)));
+      }catch(_){}
     }
     return {ok:true, folderLink: result?.folderLink||null};
   }
@@ -1545,8 +1577,23 @@ async function intentarResync(){
     }catch(_){}
   }
 }
-window.addEventListener('online',intentarResync);
-window.addEventListener('load',()=>setTimeout(intentarResync,2000));
+async function intentarSubirFotosPendientes(){
+  if(!SHEETS_URL) return;
+  const pendientes=JSON.parse(localStorage.getItem('nvt_fotos_pendientes')||'[]');
+  if(!pendientes.length) return;
+  const restantes=[];
+  for(const foto of pendientes){
+    try{
+      await enviarConXHR(SHEETS_URL, JSON.stringify({accion:'archivo',vin:foto.vin,conductor:foto.conductor,timestamp:foto.timestamp,nombre:foto.nombre,tipo:foto.tipo,datos:foto.datos_b64}));
+    }catch(e){
+      restantes.push(foto);
+    }
+  }
+  localStorage.setItem('nvt_fotos_pendientes', JSON.stringify(restantes));
+}
+
+window.addEventListener('online',()=>{intentarResync();intentarSubirFotosPendientes();});
+window.addEventListener('load',()=>setTimeout(()=>{intentarResync();intentarSubirFotosPendientes();},2000));
 
 function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
 function gr(name){const r=document.querySelector(`input[name="${name}"]:checked`);return r?r.value:'';}
