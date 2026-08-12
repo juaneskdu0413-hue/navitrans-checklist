@@ -1376,6 +1376,20 @@ function getGPS(){
 }
 function setTS(){document.getElementById('f-ts').value=new Date().toISOString();}
 
+// Repara coordenadas guardadas sin punto decimal (ej. corrupción de Sheets: 3884535 -> 3.884535)
+function normalizarCoord(val){
+  if(!val) return null;
+  let s=String(val).trim();
+  if(!s.includes('.')){
+    if(s.startsWith('-')){
+      s=s.slice(0,3)+'.'+s.slice(3);
+    }else{
+      s=s.slice(0,1)+'.'+s.slice(1);
+    }
+  }
+  return parseFloat(s);
+}
+
 function handleFiles(e){
   Array.from(e.target.files).forEach(f=>{
     files.push(f);
@@ -1888,7 +1902,7 @@ function buildCondRecRow(r){
         ? `<button class="btn-ver-fotos" onclick="event.stopPropagation();window.open('${r.folderLink}','_blank')">📷 Fotos (${fotos})</button>`
         : `<button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})">📷 Fotos (${fotos})</button>`)
     : '';
-  const pin=r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" class="cond-rec-pin" title="Ver ubicación GPS" onclick="event.stopPropagation()"><i class="ti ti-map-pin"></i></a>`:'';
+  const pin=r.lat?`<a href="https://www.google.com/maps?q=${normalizarCoord(r.lat)},${normalizarCoord(r.lng)}" target="_blank" class="cond-rec-pin" title="Ver ubicación GPS" onclick="event.stopPropagation()"><i class="ti ti-map-pin"></i></a>`:'';
   return `<div class="cond-rec-row">
     ${tipo}
     <div class="cond-rec-vin">${r.vin||'—'}</div>
@@ -1988,7 +2002,7 @@ function verDetalleRegistro(id){
 
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Otros Datos</div>
     <table style="width:100%;border-collapse:collapse;background:#f8f9fb;border-radius:10px;overflow:hidden;margin-bottom:16px;">
-      ${fila('GPS', rec.lat && rec.lng?`<a href="https://www.google.com/maps?q=${rec.lat},${rec.lng}" target="_blank" style="color:#3aaa35;font-weight:600;">📍 Ver en Maps</a>`:'—')}
+      ${fila('GPS', rec.lat && rec.lng?`<a href="https://www.google.com/maps?q=${normalizarCoord(rec.lat)},${normalizarCoord(rec.lng)}" target="_blank" style="color:#3aaa35;font-weight:600;">📍 Ver en Maps</a>`:'—')}
       ${fila('Fotos', rec.fotos?`${rec.fotos} foto(s)`:'0')}
       ${fila('Lavado', rec.lavado?'✅ Sí':'—')}
       ${fila('Hash SHA-256', rec.hash?`<span style="font-family:monospace;font-size:11px;">${rec.hash.substring(0,20)}...</span>`:'—')}
@@ -2138,7 +2152,7 @@ function renderTrayectos(){
           <div class="tl-punto-fecha">${fmt(recFecha)}</div>
           <div class="tl-punto-hora">${fmtH(recFecha)}</div>
           <div class="tl-punto-ciudad">${t.rec.ciudad||'—'}</div>
-          ${t.rec.lat?`<a href="https://www.google.com/maps?q=${t.rec.lat},${t.rec.lng}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;color:var(--bav);font-size:10px;margin-top:4px;text-decoration:none;font-weight:600;"><i class='ti ti-map-pin'></i>Ver GPS ↗</a>`:''}
+          ${t.rec.lat?`<a href="https://www.google.com/maps?q=${normalizarCoord(t.rec.lat)},${normalizarCoord(t.rec.lng)}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;color:var(--bav);font-size:10px;margin-top:4px;text-decoration:none;font-weight:600;"><i class='ti ti-map-pin'></i>Ver GPS ↗</a>`:''}
         </div>
         <div class="tl-centro">
           <div class="tl-flecha">→</div>
@@ -2150,7 +2164,7 @@ function renderTrayectos(){
           <div class="tl-punto-fecha">${fmt(entFecha)}</div>
           <div class="tl-punto-hora">${fmtH(entFecha)}</div>
           <div class="tl-punto-ciudad">${t.ent.ciudad||'—'}</div>
-          ${t.ent.lat?`<a href="https://www.google.com/maps?q=${t.ent.lat},${t.ent.lng}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;color:var(--grn);font-size:10px;margin-top:4px;text-decoration:none;font-weight:600;"><i class='ti ti-map-pin'></i>Ver GPS ↗</a>`:''}
+          ${t.ent.lat?`<a href="https://www.google.com/maps?q=${normalizarCoord(t.ent.lat)},${normalizarCoord(t.ent.lng)}" target="_blank" style="display:inline-flex;align-items:center;gap:3px;color:var(--grn);font-size:10px;margin-top:4px;text-decoration:none;font-weight:600;"><i class='ti ti-map-pin'></i>Ver GPS ↗</a>`:''}
         </div>
       </div>
       ${novedadDelta}
