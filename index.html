@@ -1883,7 +1883,11 @@ function buildCondRecRow(r){
   const tipo=isRec?`<div class="cond-rec-tipo origen">ORIGEN</div>`:`<div class="cond-rec-tipo destino">DESTINO</div>`;
   const concepto=r.concepto==='ok'?{cls:'ok',txt:'Sin novedades'}:r.concepto==='nov'?{cls:'nov',txt:'Con novedades'}:{cls:'pend',txt:'Pendiente'};
   const fotos=r.fotos||0;
-  const fotosBtn=fotos>0?`<button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})">📷 Fotos (${fotos})</button>`:'';
+  const fotosBtn=fotos>0
+    ? (r.folderLink
+        ? `<button class="btn-ver-fotos" onclick="event.stopPropagation();window.open('${r.folderLink}','_blank')">📷 Fotos (${fotos})</button>`
+        : `<button class="btn-ver-fotos" onclick="event.stopPropagation();openFotosModal(${r.id})">📷 Fotos (${fotos})</button>`)
+    : '';
   const pin=r.lat?`<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" class="cond-rec-pin" title="Ver ubicación GPS" onclick="event.stopPropagation()"><i class="ti ti-map-pin"></i></a>`:'';
   return `<div class="cond-rec-row">
     ${tipo}
@@ -1905,8 +1909,7 @@ function toggleCond(idx){
 
 // ── VISOR DE FOTOS ────────────────────────────────────────────────
 function openFotosModal(recId){
-  const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
-  const r=recs.find(x=>x.id===recId);
+  const r=adminRecsCache.find(x=>x.id===recId);
   if(!r) return;
 
   closeFotosModal();
