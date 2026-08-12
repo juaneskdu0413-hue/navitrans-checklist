@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Navitrans x Union Andina · Recepcion y Entrega</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
@@ -1468,10 +1471,10 @@ async function submitForm(){
 
   btn.disabled=false;
   btn.innerHTML='<i class="ti ti-cloud-upload"></i> Guardar y Enviar Registro';
-  mostrarSello(vin,conductor,hash,ts,res.ok);
+  mostrarSello(vin,conductor,hash,ts,res.ok,res.msg||'');
 }
 
-function mostrarSello(vin,conductor,hash,ts,sync){
+function mostrarSello(vin,conductor,hash,ts,sync,errMsg){
   const fecha=new Date(ts).toLocaleString('es-CO');
   const hc=hash.substring(0,16).toUpperCase();
   const ov=document.createElement('div');
@@ -1491,10 +1494,11 @@ function mostrarSello(vin,conductor,hash,ts,sync){
         <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">Fecha y hora</div>
         <div style="font-size:12px;color:#374151;margin-bottom:10px;">${fecha}</div>
         <div style="display:inline-flex;align-items:center;gap:6px;background:${sync?'#dcfce7':'#fef3c7'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:${sync?'#16a34a':'#d97706'};">
-          ${sync?'☁️ Sincronizado con Google Sheets':'⏳ Guardado localmente · reintentando sync...'}
+          ${sync?'☁️ Sincronizado con Google Sheets':'⚠️ Sin sync · '+(errMsg||'error de red')}
         </div>
       </div>
       <button onclick="this.closest('[style*=fixed]').remove();goHome();" style="width:100%;background:#3aaa35;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);">Aceptar</button>
+      ${!sync?`<button onclick="intentarResync().then(()=>alert('Reintento completado. Revisa el panel admin.'))" style="width:100%;background:#fff;color:#3aaa35;border:2px solid #3aaa35;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:8px;">🔄 Reintentar sincronización</button>`:''}
     </div>`;
   document.body.appendChild(ov);
 }
