@@ -1380,8 +1380,8 @@ async function enviarSheets(reg,archivos){
 
   async function intentarEnvio(){
     let result=null;
+    const xhrRes=await enviarConXHR(SHEETS_URL,JSON.stringify({accion:'checklist',datos:reg}));
     try{
-      const xhrRes=await enviarConXHR(SHEETS_URL,JSON.stringify({accion:'checklist',datos:reg}));
       result=JSON.parse(xhrRes.text);
     }catch(e){
       result=null;
