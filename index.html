@@ -826,6 +826,25 @@
       </div>
       <div style="padding:16px 14px 8px;" id="records-list"></div>
     </div>
+
+    <div style="margin-top:14px;">
+      <button onclick="toggleHistorial()" id="btn-historial" style="width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <i class="ti ti-history"></i> Ver historial completo de registros
+      </button>
+      <div id="seccion-historial" style="display:none;margin-top:10px;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1a1a1a,#1b5e20);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="color:#3aaa35;font-size:11px;font-weight:700;letter-spacing:1px;">HISTORIAL COMPLETO</div>
+            <div style="color:#fff;font-size:14px;font-weight:800;margin-top:2px;">Todos los registros · Recepción y Entrega</div>
+          </div>
+          <div id="historial-count" style="background:rgba(255,255,255,0.15);color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;"></div>
+        </div>
+        <div style="padding:14px;">
+          <input type="text" id="historial-search" oninput="filtrarHistorial()" placeholder="🔍 Buscar por VIN, conductor, ciudad..." style="width:100%;padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;margin-bottom:12px;outline:none;">
+          <div id="historial-tabla" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1823,6 +1842,10 @@ async function showRecords(){
   loadCfg();
   adminRecsCache=await cargarRegistrosAdmin();
   renderTrayectos(); renderRecords(); showScreen('sr');
+  if(document.getElementById('seccion-historial')?.style.display==='block'){
+    _historialRecs=adminRecsCache;
+    renderHistorial(_historialRecs);
+  }
 }
 
 function renderRecords(){
@@ -2012,6 +2035,87 @@ function verDetalleRegistro(id){
   `;
 
   document.getElementById('modal-detalle').style.display='block';
+}
+
+// ── HISTORIAL COMPLETO ──────────────────────────────────────────────
+let _historialRecs=[];
+
+function toggleHistorial(){
+  const sec=document.getElementById('seccion-historial');
+  const btn=document.getElementById('btn-historial');
+  if(sec.style.display==='none'){
+    sec.style.display='block';
+    btn.innerHTML='<i class="ti ti-chevron-up"></i> Ocultar historial';
+    _historialRecs=adminRecsCache||[];
+    renderHistorial(_historialRecs);
+  }else{
+    sec.style.display='none';
+    btn.innerHTML='<i class="ti ti-history"></i> Ver historial completo de registros';
+  }
+}
+
+function renderHistorial(recs){
+  document.getElementById('historial-count').textContent=recs.length+' registros';
+  const tbody=recs.map(rec=>{
+    const fecha=rec.timestamp?new Date(rec.timestamp).toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const tipo=rec.mode==='recepcion'
+      ?'<span style="background:#e8f5e9;color:#1b5e20;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:800;">ORIGEN</span>'
+      :'<span style="background:#263238;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:800;">DESTINO</span>';
+    const concepto=rec.concepto==='ok'
+      ?'<span style="background:#e8f5e9;color:#2e7d32;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;">✅ Sin nov.</span>'
+      :rec.concepto==='nov'
+      ?'<span style="background:#fdecea;color:#c62828;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;">⚠️ Con nov.</span>'
+      :'<span style="background:#fff8e1;color:#f57f17;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;">⏳ Pendiente</span>';
+    const fotos=rec.folderLink?`<a href="${rec.folderLink}" target="_blank" style="color:#3aaa35;font-weight:600;font-size:11px;">📷 ${rec.fotos||0} fotos</a>`:`<span style="color:#ccc;font-size:11px;">${rec.fotos||0} fotos</span>`;
+    const gps=rec.lat && rec.lng?`<a href="javascript:void(0)" onclick="abrirMapsDesdeHistorial('${rec.lat}','${rec.lng}')" style="color:#e53935;font-size:14px;">📍</a>`:'';
+    const detalle=`<button onclick="verDetalleRegistro('${rec.id}')" style="background:#f0f0f0;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;">📋 Ver</button>`;
+    return `<tr style="border-bottom:1px solid #f0f0f0;">
+      <td style="padding:10px 8px;white-space:nowrap;">${tipo}</td>
+      <td style="padding:10px 8px;font-size:12px;font-weight:600;color:#1a1a1a;white-space:nowrap;">${rec.conductor||'—'}</td>
+      <td style="padding:10px 8px;font-family:monospace;font-size:11px;font-weight:800;color:#1b5e20;white-space:nowrap;">${rec.vin||'—'}</td>
+      <td style="padding:10px 8px;font-size:11px;color:#888;white-space:nowrap;">${fecha}</td>
+      <td style="padding:10px 8px;font-size:11px;color:#555;">${rec.ciudad||'—'}</td>
+      <td style="padding:10px 8px;">${concepto}</td>
+      <td style="padding:10px 8px;">${fotos}</td>
+      <td style="padding:10px 8px;">${gps}</td>
+      <td style="padding:10px 8px;">${detalle}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('historial-tabla').innerHTML=`
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:#f8f9fb;border-bottom:2px solid #e5e7eb;">
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Tipo</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Conductor</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">VIN</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Fecha</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Ciudad</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Concepto</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Fotos</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">GPS</th>
+          <th style="padding:10px 8px;text-align:left;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;">Detalle</th>
+        </tr>
+      </thead>
+      <tbody>${tbody}</tbody>
+    </table>`;
+}
+
+function filtrarHistorial(){
+  const q=document.getElementById('historial-search').value.trim().toLowerCase();
+  const filtrados=q?_historialRecs.filter(r=>
+    (r.conductor||'').toLowerCase().includes(q) ||
+    (r.vin||'').toLowerCase().includes(q) ||
+    (r.ciudad||'').toLowerCase().includes(q) ||
+    (r.placa||'').toLowerCase().includes(q)
+  ):_historialRecs;
+  renderHistorial(filtrados);
+}
+
+function abrirMapsDesdeHistorial(lat,lng){
+  const latF=normalizarCoord(lat);
+  const lngF=normalizarCoord(lng);
+  if(latF && lngF) window.open(`https://www.google.com/maps?q=${latF},${lngF}`,'_blank');
 }
 
 // ── CONFIG ────────────────────────────────────────────────────────
