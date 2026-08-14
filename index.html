@@ -1235,10 +1235,18 @@ function quitarBanner(){
 }
 
 // ── BÚSQUEDA DE VEHÍCULOS PENDIENTES POR CONDUCTOR (ENTREGA) ──────
+function normalizarNombre(s){
+  const sinAcentos=(s||'').toString().trim().toLowerCase().normalize('NFD').split('').filter(ch=>{
+    const code=ch.codePointAt(0);
+    return !(code>=0x0300 && code<=0x036f);
+  }).join('');
+  return sinAcentos.replace(/\s+/g,' ');
+}
+
 function buscarVehiculosLocal(conductor){
   const recs=JSON.parse(localStorage.getItem('nvt_recs')||'[]');
-  const norm=conductor.trim().toLowerCase().replace(/\s+/g,' ');
-  const recepciones=recs.filter(r=>r.mode==='recepcion' && (r.conductor||'').trim().toLowerCase().replace(/\s+/g,' ')===norm);
+  const norm=normalizarNombre(conductor);
+  const recepciones=recs.filter(r=>r.mode==='recepcion' && normalizarNombre(r.conductor)===norm);
   const vinsConEntrega=new Set(recs.filter(r=>r.mode==='entrega').map(r=>r.vin));
   return recepciones
     .filter(r=>r.vin && !vinsConEntrega.has(r.vin))
@@ -1298,7 +1306,8 @@ async function buscarVehiculosConductor(){
 
   let vehiculos=null;
   try{
-    const url=SHEETS_URL+'?conductor='+encodeURIComponent(conductor);
+    const nombreNorm=normalizarNombre(conductor);
+    const url=SHEETS_URL+'?conductor='+encodeURIComponent(nombreNorm);
     const resp=await fetch(url);
     const txt=await resp.text();
     const data=JSON.parse(txt);
